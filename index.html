@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rifa Laptop HP G4 - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            /* More vibrant and dynamic gradient */
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top to prevent content from being squashed */
+            overflow-y: auto; /* Allow scrolling for long content */
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.08); /* Slightly more opaque for better contrast */
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); /* Stronger, more defined shadow */
+            backdrop-filter: blur(15px); /* Stronger blur effect */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Header styling */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3.8em; /* Larger font size */
+            font-weight: 800; /* Extra bold */
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #ff9a00, #ff5a00); /* Orange gradient for title */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.6); /* More pronounced text shadow */
+            letter-spacing: 2px;
+        }
+
+        .admin-badge, .client-badge {
+            background: linear-gradient(45deg, #e74c3c, #c0392b); /* Red gradient */
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px; /* More rounded */
+            font-size: 1em;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .client-badge {
+            background: linear-gradient(45deg, #27ae60, #2ecc71); /* Green gradient for client badge */
+        }
+
+        .admin-badge:hover, .client-badge:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Laptop Info section */
+        .laptop-info {
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.15); /* Slightly brighter background */
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            gap: 20px; /* Space between items */
+        }
+
+        .laptop-details {
+            flex: 2; /* Take more space */
+            min-width: 250px; /* Ensure it doesn't get too small */
+        }
+
+        .laptop-details h2 {
+            font-size: 3em; /* Larger title */
+            margin-bottom: 10px;
+            color: #8e44ad; /* Purple accent */
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .laptop-details p {
+            font-size: 1.3em; /* Larger text */
+            margin-bottom: 15px;
+            color: #ecf0f1;
+        }
+
+        .laptop-image {
+            width: 250px; /* Larger image container */
+            height: 180px;
+            background: #4a90e2;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .laptop-image:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .laptop-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+
+        .laptop-image input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            z-index: 1;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1em;
+            color: #f0f0f0;
+        }
+
+        .image-controls {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            z-index: 2;
+        }
+
+        .image-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 5px;
+            padding: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background 0.2s ease;
+        }
+
+        .image-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-1px);
+        }
+
+        .price {
+            font-size: 4.5em; /* Even larger price */
+            font-weight: 800;
+            color: #ffd700; /* Gold color */
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.6);
+            text-align: right;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        /* Stats section */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Slightly larger min-width */
+            gap: 25px; /* More space between cards */
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.8em; /* Larger number */
+            font-weight: 800;
+            color: #00f2fe; /* Bright cyan accent */
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            margin-top: 5px;
+            color: #e0e0e0;
+        }
+
+        /* URL Share section */
+        .url-share, .management-panel, .buyers-table, .pending-reservations, .auto-mode {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .url-share h3, .management-panel h3, .buyers-table h3, .pending-reservations h3, .auto-mode h3 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            color: #f0f0f0;
+            font-weight: 700;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .url-share h3 {
+            color: #3498db; /* Blue accent for URL section */
+        }
+
+        .pending-reservations h3 {
+            color: #f39c12; /* Orange accent for pending */
+        }
+
+        .auto-mode h3 {
+            color: #9b59b6; /* Purple accent for auto mode */
+        }
+
+        .url-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .url-input input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 17px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+            min-width: 200px; /* Ensure input is not too small */
+        }
+
+        /* Buttons */
+        .btn {
+            background: linear-gradient(45deg, #27ae60, #2ecc71); /* Green gradient */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            flex-grow: 1; /* Allow buttons to grow */
+        }
+
+        .btn:hover {
+            background: linear-gradient(45deg, #219a52, #27ae60);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #e74c3c, #c0392b); /* Red gradient */
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(45deg, #c0392b, #a52a22);
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #3498db, #2980b9); /* Blue gradient */
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(45deg, #2980b9, #1f618d);
+        }
+
+        .btn-warning { /* New style for "No Pago" button */
+            background: linear-gradient(45deg, #f39c12, #e67e22); /* Orange gradient */
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(45deg, #e67e22, #d35400);
+        }
+
+        /* Numbers Grid */
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(65px, 1fr)); /* Adjust column size for better fit */
+            gap: 8px; /* Slightly larger gap */
+            margin-bottom: 40px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .number-box {
+            width: 65px; /* Consistent size */
+            height: 65px;
+            border: 3px solid #f0f0f0; /* Thicker border */
+            display: flex;
+            flex-direction: column; /* For number and name */
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em; /* Larger number font */
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            border-radius: 10px; /* Rounded corners for boxes */
+            background: rgba(255, 255, 255, 0.05); /* Default background */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .number-box:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.08); /* More pronounced hover effect */
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .number-box.sold {
+            background: linear-gradient(45deg, #e74c3c, #c0392b); /* Red gradient for sold */
+            color: white;
+            border-color: #e74c3c;
+        }
+
+        .number-box.paid {
+            background: linear-gradient(45deg, #27ae60, #2ecc71); /* Green gradient for paid */
+            color: white;
+            border-color: #27ae60;
+        }
+
+        .number-box.pending {
+            background: linear-gradient(45deg, #f39c12, #e67e22); /* Orange gradient for pending */
+            color: white;
+            border-color: #f39c12;
+        }
+
+        .buyer-name {
+            position: absolute;
+            bottom: 2px; /* Adjust position */
+            font-size: 0.7em;
+            background: rgba(0, 0, 0, 0.85); /* Darker background for readability */
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            max-width: 90%; /* Allow more width */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #f0f0f0;
+            transform: translateX(-50%);
+            left: 50%;
+        }
+        
+        .number-text {
+            margin-bottom: 5px; /* Space between number and name */
+        }
+
+        /* Date and Contact Info */
+        .date-info, .contact-info {
+            text-align: center;
+            font-size: 1.6em; /* Larger font */
+            margin-bottom: 25px;
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        .contact-info p {
+            margin-bottom: 8px;
+        }
+
+        /* Management Panel */
+        .management-panel {
+            margin-bottom: 40px;
+        }
+
+        .management-panel > div {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive columns */
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: #f0f0f0;
+            font-size: 1.1em;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 17px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Buyers Table */
+        .buyers-table h3 {
+            color: #1abc9c; /* Teal accent for table title */
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: separate; /* Use separate for rounded corners on cells */
+            border-spacing: 0;
+            margin-top: 20px;
+            overflow: hidden; /* Ensures rounded corners apply */
+            border-radius: 10px;
+        }
+
+        .table th, .table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: #f0f0f0;
+        }
+
+        .table th {
+            background: rgba(255, 255, 255, 0.15);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.95em;
+            letter-spacing: 0.5px;
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .status-paid {
+            color: #2ecc71; /* Brighter green */
+            font-weight: 700;
+        }
+
+        .status-pending {
+            color: #f39c12; /* Brighter orange */
+            font-weight: 700;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 18px;
+            border-radius: 12px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+            font-size: 1.1em;
+            font-weight: 600;
+            min-width: 250px;
+            text-align: center;
+        }
+
+        .notification.error {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideIn 0.4s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Pending Reservations */
+        .pending-reservations {
+            margin-bottom: 40px;
+        }
+
+        .reservation-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 18px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .reservation-info {
+            flex: 1;
+            min-width: 200px;
+            color: #e0e0e0;
+        }
+
+        .reservation-info strong {
+            color: #f39c12;
+        }
+
+        .reservation-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 70px; /* Wider switch */
+            height: 35px; /* Taller switch */
+            background: #7f8c8d; /* Grey for off state */
+            border-radius: 17.5px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch.active {
+            background: linear-gradient(45deg, #27ae60, #2ecc71); /* Green gradient for on state */
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 4px; /* Adjust for new height */
+            left: 4px; /* Adjust for new width */
+            width: 27px; /* Larger slider */
+            height: 27px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(35px); /* Adjust for new width */
+        }
+
+        .auto-mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .auto-mode-info {
+            font-size: 0.95em;
+            color: #bdc3c7;
+            margin-top: 15px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1001; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #34495e, #2c3e50); /* Darker gradient for modal */
+            margin: auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            color: white;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content h3 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #f1c40f; /* Yellow accent for modal title */
+            text-align: center;
+        }
+
+        .modal .close {
+            color: #aaa;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .modal .close:hover,
+        .modal .close:focus {
+            color: #e74c3c;
+            text-decoration: none;
+        }
+
+        .modal .form-group input {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+
+        .modal .btn {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.8em;
+            }
+
+            .laptop-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .laptop-details, .laptop-image, .price {
+                width: 100%;
+                text-align: center;
+            }
+
+            .laptop-image {
+                margin-bottom: 20px;
+            }
+
+            .price {
+                font-size: 3.5em;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .url-input {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .numbers-grid {
+                grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+                gap: 6px;
+            }
+
+            .number-box {
+                width: 55px;
+                height: 55px;
+                font-size: 1.2em;
+            }
+
+            .management-panel > div {
+                grid-template-columns: 1fr;
+            }
+
+            .notification {
+                width: 90%;
+                left: 5%;
+                right: 5%;
+                top: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2.2em;
+            }
+
+            .laptop-details h2 {
+                font-size: 2em;
+            }
+
+            .laptop-details p {
+                font-size: 1em;
+            }
+
+            .price {
+                font-size: 3em;
+            }
+
+            .stat-number {
+                font-size: 2.2em;
+            }
+
+            .stat-label {
+                font-size: 0.9em;
+            }
+
+            .url-share h3, .management-panel h3, .buyers-table h3, .pending-reservations h3, .auto-mode h3 {
+                font-size: 1.4em;
+            }
+
+            .url-input input, .form-group input, .form-group select, .btn {
+                font-size: 15px;
+                padding: 10px;
+            }
+
+            .number-box {
+                width: 45px;
+                height: 45px;
+                font-size: 1em;
+            }
+
+            .date-info, .contact-info {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="admin-badge">🔒 PANEL ADMINISTRADOR</div>
+            <h1>GRAN RIFA DE</h1>
+        </div>
+
+        <div class="laptop-info">
+            <div class="laptop-details">
+                <h2>LAPTOP HP G4</h2>
+                <p>MUY POCO USO RANGO B</p>
+            </div>
+            <div class="laptop-image" id="laptopImageContainer">
+                <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)">
+                <div class="upload-text" id="uploadText">
+                    <div>📷</div>
+                    <div>Subir imagen</div>
+                </div>
+                <img id="laptopImage" style="display: none;">
+                <div class="image-controls" id="imageControls" style="display: none;">
+                    <button class="image-btn" onclick="changeImage()" title="Cambiar imagen">📷</button>
+                    <button class="image-btn" onclick="removeImage()" title="Quitar imagen">🗑️</button>
+                </div>
+            </div>
+            <div class="price">
+                VALOR<br>2$
+            </div>
+        </div>
+
+        <div class="auto-mode">
+            <h3>🤖 Modo Automático</h3>
+            <div class="auto-mode-toggle">
+                <div class="toggle-switch" id="autoModeToggle" onclick="toggleAutoMode()">
+                    <div class="toggle-slider"></div>
+                </div>
+                <span id="autoModeStatus">Desactivado</span>
+            </div>
+            <div class="auto-mode-info">
+                Cuando está activado, las reservas de clientes se confirman automáticamente como ventas.
+            </div>
+        </div>
+
+        <div class="url-share">
+            <h3>🔗 URL Para Clientes</h3>
+            <div class="url-input">
+                <input type="text" id="clientUrl" readonly value="[Genera una URL única para tus clientes]">
+                <button class="btn btn-info" onclick="copyUrl()">Copiar URL</button>
+                <button class="btn" onclick="generateClientUrl()">Generar Nueva URL</button>
+            </div>
+            <p style="font-size: 0.9em; color: #ccc; margin-top: 10px;">
+                📱 Comparte esta URL con tus clientes para que puedan reservar números
+            </p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalSold">0</div>
+                <div class="stat-label">Números Vendidos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalPaid">0</div>
+                <div class="stat-label">Pagos Confirmados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalRevenue">$0</div>
+                <div class="stat-label">Ingresos Totales</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="availableNumbers">100</div>
+                <div class="stat-label">Números Disponibles</div>
+            </div>
+        </div>
+
+        <div class="pending-reservations" id="pendingReservations">
+            <h3>⏳ Reservas Pendientes de Confirmar</h3>
+            <div id="pendingList">
+                <p style="color: #ccc; font-style: italic;">No hay reservas pendientes</p>
+            </div>
+        </div>
+
+        <div class="numbers-grid" id="numbersGrid">
+            <!-- Los números se generan con JavaScript -->
+        </div>
+
+        <div class="date-info">
+            <p>PARA EL 3 DE AGOSTO 2025</p>
+        </div>
+
+        <div class="contact-info">
+            <p><strong>YAPPY:</strong> 69436925</p>
+            <p><strong>BOLETO NO PAGADO ES NULO</strong></p>
+        </div>
+
+        <div class="management-panel">
+            <h3>Panel de Gestión Manual</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label for="selectedNumber">Número Seleccionado:</label>
+                    <input type="number" id="selectedNumber" min="0" max="99" placeholder="Selecciona un número">
+                </div>
+                <div class="form-group">
+                    <label for="buyerName">Nombre del Comprador:</label>
+                    <input type="text" id="buyerName" placeholder="Ingresa el nombre">
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-top: 15px;">
+                <button class="btn" onclick="sellNumber()">Vender Número</button>
+                <button class="btn" onclick="markAsPaid()">Marcar como Pagado</button>
+                <button class="btn btn-warning" onclick="markAsUnpaid()">Marcar como No Pagado</button>
+                <button class="btn btn-danger" onclick="cancelSale()">Cancelar Venta</button>
+            </div>
+            <button class="btn" style="margin-top: 20px; width: 100%;" onclick="saveAdminChanges()">Guardar Cambios</button>
+        </div>
+
+        <div class="buyers-table">
+            <h3>Lista de Compradores</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Nombre</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th>Origen</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="buyersTableBody">
+                    <!-- Los compradores se muestran aquí -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <!-- Modal para reservar número (Client View) -->
+    <div id="reserveModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeReserveModal()">&times;</span>
+            <h3>Reservar Número</h3>
+            <div class="form-group">
+                <label>Número seleccionado:</label>
+                <input type="text" id="selectedNumberClient" readonly>
+            </div>
+            <div class="form-group">
+                <label for="clientName">Tu nombre:</label>
+                <input type="text" id="clientName" placeholder="Ingresa tu nombre">
+            </div>
+            <button class="btn" onclick="reserveNumberClient()">Reservar</button>
+        </div>
+    </div>
+
+    <script>
+        // Data structure for the raffle
+        let rifaData = {
+            numbers: {}, // Stores details for each number (e.g., {0: {status: 'paid', name: 'John Doe', date: '...'}})
+            buyers: [], // List of all buyers for the table
+            laptopImage: null, // Base64 string of the laptop image
+            pendingReservations: [], // Reservations made by clients awaiting admin confirmation
+            autoMode: false, // Flag for automatic reservation confirmation
+            clientUrlId: null // Unique ID for the client-facing URL
+        };
+
+        let currentEditingId = null; // Used for manual management to pre-fill selected number
+
+        // --- Utility Functions ---
+
+        /**
+         * Generates a unique ID for the client URL and updates the input field.
+         * Stores the ID in localStorage for persistence.
+         */
+        function generateClientUrl() {
+            const urlId = Math.random().toString(36).substring(2, 11); // Generates a random alphanumeric string
+            rifaData.clientUrlId = urlId;
+            const clientUrl = `${window.location.origin}${window.location.pathname}?client=${urlId}`;
+            document.getElementById('clientUrl').value = clientUrl;
+
+            saveData(); // Save the new URL ID
+            showNotification('URL generada exitosamente', 'success');
+        }
+
+        /**
+         * Copies the client URL to the clipboard.
+         */
+        function copyUrl() {
+            const urlInput = document.getElementById('clientUrl');
+            urlInput.select();
+            // Fallback for older browsers or environments where navigator.clipboard might not work
+            try {
+                document.execCommand('copy');
+                showNotification('URL copiada al portapapeles', 'success');
+            } catch (err) {
+                showNotification('Error al copiar la URL. Por favor, cópiala manualmente.', 'error');
+                console.error('Failed to copy URL:', err);
+            }
+        }
+
+        /**
+         * Toggles the automatic reservation confirmation mode.
+         * If activated, it processes any pending reservations immediately.
+         */
+        function toggleAutoMode() {
+            rifaData.autoMode = !rifaData.autoMode;
+            const toggle = document.getElementById('autoModeToggle');
+            const status = document.getElementById('autoModeStatus');
+
+            if (rifaData.autoMode) {
+                toggle.classList.add('active');
+                status.textContent = 'Activado';
+                showNotification('Modo automático activado', 'success');
+                processPendingReservations(); // Process pending immediately
+            } else {
+                toggle.classList.remove('active');
+                status.textContent = 'Desactivado';
+                showNotification('Modo automático desactivado', 'success');
+            }
+            saveData(); // Save auto mode state
+        }
+
+        /**
+         * Processes all pending reservations, marking them as 'paid' and moving them to buyers list.
+         * Only runs if autoMode is active.
+         */
+        function processPendingReservations() {
+            if (!rifaData.autoMode) return;
+
+            // Create a copy to iterate while modifying the original
+            const reservationsToProcess = [...rifaData.pendingReservations];
+
+            reservationsToProcess.forEach(reservation => {
+                // Check if the number is still pending (it might have been manually cancelled)
+                if (rifaData.numbers[reservation.number] && rifaData.numbers[reservation.number].status === 'pending') {
+                    confirmReservation(reservation.number, reservation.name, reservation.timestamp);
+                }
+            });
+
+            // Clear all pending reservations as they are now processed
+            rifaData.pendingReservations = [];
+            updatePendingReservations();
+            saveData();
+        }
+
+        /**
+         * Handles image file upload, displays it, and stores it in rifaData and localStorage.
+         * @param {Event} event - The file input change event.
+         */
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                showNotification('Por favor selecciona un archivo de imagen válido (JPG, PNG, GIF, etc.)', 'error');
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                showNotification('La imagen es demasiado grande. Por favor selecciona una imagen menor a 5MB', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('laptopImage');
+                const uploadText = document.getElementById('uploadText');
+                const imageControls = document.getElementById('imageControls');
+
+                img.src = e.target.result;
+                img.style.display = 'block';
+                uploadText.style.display = 'none';
+                imageControls.style.display = 'flex';
+
+                rifaData.laptopImage = e.target.result;
+                saveData(); // Save image data
+                showNotification('Imagen subida exitosamente', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /**
+         * Triggers the file input for changing the image.
+         */
+        function changeImage() {
+            document.getElementById('imageUpload').click();
+        }
+
+        /**
+         * Removes the currently displayed laptop image.
+         */
+        function removeImage() {
+            // Using a custom modal for confirmation instead of alert/confirm
+            showCustomModal('¿Estás seguro de que quieres quitar la imagen?', () => {
+                const img = document.getElementById('laptopImage');
+                const uploadText = document.getElementById('uploadText');
+                const imageControls = document.getElementById('imageControls');
+                const fileInput = document.getElementById('imageUpload');
+
+                img.style.display = 'none';
+                img.src = '';
+                uploadText.style.display = 'block';
+                imageControls.style.display = 'none';
+                fileInput.value = ''; // Clear file input value
+
+                rifaData.laptopImage = null;
+                saveData(); // Remove image data
+                showNotification('Imagen eliminada', 'success');
+            });
+        }
+
+        /**
+         * Displays a notification message.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success' or 'error' for styling.
+         */
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        /**
+         * Initializes the application, loading saved data and setting up views.
+         */
+        function initializeApp() {
+            loadSavedData(); // Load data first
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const clientId = urlParams.get('client');
+
+            if (clientId) {
+                showClientView(clientId);
+            } else {
+                // Admin view setup
+                document.body.classList.remove('client-mode'); // Ensure admin mode styles are active
+                document.getElementById('reserveModal').style.display = 'none'; // Hide client modal
+                generateNumbersGrid();
+                updateStats();
+                updateBuyersTable();
+                updatePendingReservations();
+
+                if (!rifaData.clientUrlId) {
+                    generateClientUrl();
+                } else {
+                    const clientUrl = `${window.location.origin}${window.location.pathname}?client=${rifaData.clientUrlId}`;
+                    document.getElementById('clientUrl').value = clientUrl;
+                }
+                // Simulate client data for admin view (for testing/demo purposes)
+                // simulateClientData();
+            }
+        }
+
+        /**
+         * Loads raffle data from localStorage.
+         */
+        function loadSavedData() {
+            const savedData = localStorage.getItem('rifaData');
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    // Merge saved data, ensuring default values are kept if not present in savedData
+                    rifaData = { ...rifaData, ...parsed };
+                    // Ensure numbers object is initialized if it was empty
+                    if (!rifaData.numbers) rifaData.numbers = {};
+                    if (!rifaData.buyers) rifaData.buyers = [];
+                    if (!rifaData.pendingReservations) rifaData.pendingReservations = [];
+                } catch (e) {
+                    console.error("Error parsing saved data:", e);
+                    // Optionally clear corrupted data
+                    localStorage.removeItem('rifaData');
+                }
+            }
+
+            const savedImage = localStorage.getItem('rifaLaptopImage');
+            if (savedImage) {
+                rifaData.laptopImage = savedImage;
+                const img = document.getElementById('laptopImage');
+                const uploadText = document.getElementById('uploadText');
+                const imageControls = document.getElementById('imageControls');
+
+                if (img && uploadText && imageControls) { // Check if elements exist (they won't in client view initially)
+                    img.src = savedImage;
+                    img.style.display = 'block';
+                    uploadText.style.display = 'none';
+                    imageControls.style.display = 'flex';
+                }
+            }
+
+            const savedUrl = localStorage.getItem('rifaClientUrl');
+            if (savedUrl) {
+                rifaData.clientUrlId = savedUrl;
+            }
+
+            const savedAutoMode = localStorage.getItem('rifaAutoMode');
+            if (savedAutoMode !== null) { // Check for null to distinguish from 'false'
+                rifaData.autoMode = savedAutoMode === 'true';
+                const toggle = document.getElementById('autoModeToggle');
+                const status = document.getElementById('autoModeStatus');
+
+                if (toggle && status) { // Check if elements exist
+                    if (rifaData.autoMode) {
+                        toggle.classList.add('active');
+                        status.textContent = 'Activado';
+                    } else {
+                        toggle.classList.remove('active');
+                        status.textContent = 'Desactivado';
+                    }
+                }
+            }
+        }
+
+        /**
+         * Saves current raffle data to localStorage.
+         */
+        function saveData() {
+            const dataToSave = {
+                numbers: rifaData.numbers,
+                buyers: rifaData.buyers,
+                pendingReservations: rifaData.pendingReservations,
+                autoMode: rifaData.autoMode,
+                clientUrlId: rifaData.clientUrlId
+            };
+            localStorage.setItem('rifaData', JSON.stringify(dataToSave));
+            localStorage.setItem('rifaLaptopImage', rifaData.laptopImage || ''); // Store image separately for easier loading
+            localStorage.setItem('rifaAutoMode', rifaData.autoMode.toString());
+            localStorage.setItem('rifaClientUrl', rifaData.clientUrlId || '');
+        }
+
+        // --- Admin View Functions ---
+
+        /**
+         * Generates the grid of raffle numbers (0-99).
+         * Each number box is clickable to select for manual management.
+         */
+        function generateNumbersGrid() {
+            const numbersGrid = document.getElementById('numbersGrid');
+            numbersGrid.innerHTML = ''; // Clear existing grid
+
+            for (let i = 0; i < 100; i++) {
+                const numberBox = document.createElement('div');
+                numberBox.classList.add('number-box');
+                numberBox.dataset.number = i; // Store the number as a data attribute
+
+                const numberText = document.createElement('span');
+                numberText.classList.add('number-text');
+                numberText.textContent = String(i).padStart(2, '0'); // Format as 00, 01, ..., 99
+                numberBox.appendChild(numberText);
+
+                // Check status and apply appropriate class
+                const numberInfo = rifaData.numbers[i];
+                if (numberInfo) {
+                    numberBox.classList.add(numberInfo.status);
+                    if (numberInfo.name) {
+                        const buyerNameSpan = document.createElement('span');
+                        buyerNameSpan.classList.add('buyer-name');
+                        buyerNameSpan.textContent = numberInfo.name;
+                        numberBox.appendChild(buyerNameSpan);
+                    }
+                }
+
+                // Add click listener for manual selection
+                numberBox.addEventListener('click', () => selectNumberForManagement(i));
+                numbersGrid.appendChild(numberBox);
+            }
+        }
+
+        /**
+         * Updates the statistics displayed on the admin page.
+         */
+        function updateStats() {
+            let totalSold = 0;
+            let totalPaid = 0;
+            let totalRevenue = 0;
+            let availableNumbers = 0;
+
+            for (let i = 0; i < 100; i++) {
+                const numberInfo = rifaData.numbers[i];
+                if (numberInfo) {
+                    totalSold++;
+                    if (numberInfo.status === 'paid') {
+                        totalPaid++;
+                        totalRevenue += 2; // Assuming each ticket is $2
+                    }
+                } else {
+                    availableNumbers++;
+                }
+            }
+
+            document.getElementById('totalSold').textContent = totalSold;
+            document.getElementById('totalPaid').textContent = totalPaid;
+            document.getElementById('totalRevenue').textContent = `$${totalRevenue}`;
+            document.getElementById('availableNumbers').textContent = availableNumbers;
+
+            // Update client view stats if it's active
+            if (document.getElementById('clientTotalSold')) {
+                document.getElementById('clientTotalSold').textContent = totalSold;
+                document.getElementById('clientAvailableNumbers').textContent = availableNumbers;
+            }
+        }
+
+        /**
+         * Updates the table of buyers on the admin page.
+         */
+        function updateBuyersTable() {
+            const buyersTableBody = document.getElementById('buyersTableBody');
+            if (!buyersTableBody) return; // Exit if not in admin view
+
+            buyersTableBody.innerHTML = ''; // Clear existing rows
+
+            // Sort buyers by number for consistent display
+            const sortedBuyers = [...rifaData.buyers].sort((a, b) => a.number - b.number);
+
+            if (sortedBuyers.length === 0) {
+                const noBuyersRow = document.createElement('tr');
+                noBuyersRow.innerHTML = `<td colspan="6" style="text-align: center; color: #ccc; font-style: italic;">No hay compradores registrados aún.</td>`;
+                buyersTableBody.appendChild(noBuyersRow);
+                return;
+            }
+
+            sortedBuyers.forEach(buyer => {
+                const row = buyersTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${String(buyer.number).padStart(2, '0')}</td>
+                    <td>${buyer.name}</td>
+                    <td class="${buyer.status === 'paid' ? 'status-paid' : 'status-pending'}">${buyer.status === 'paid' ? 'Pagado' : 'Pendiente'}</td>
+                    <td>${new Date(buyer.date).toLocaleString()}</td>
+                    <td>${buyer.origin || 'Admin'}</td>
+                    <td>
+                        <button class="btn btn-info" onclick="editBuyer(${buyer.number})">Editar</button>
+                        <button class="btn btn-danger" onclick="removeBuyer(${buyer.number})">Eliminar</button>
+                    </td>
+                `;
+            });
+        }
+
+        /**
+         * Updates the list of pending reservations on the admin page.
+         */
+        function updatePendingReservations() {
+            const pendingList = document.getElementById('pendingList');
+            if (!pendingList) return; // Exit if not in admin view
+
+            pendingList.innerHTML = ''; // Clear existing list
+
+            if (rifaData.pendingReservations.length === 0) {
+                pendingList.innerHTML = '<p style="color: #ccc; font-style: italic;">No hay reservas pendientes</p>';
+                return;
+            }
+
+            rifaData.pendingReservations.forEach(reservation => {
+                const reservationItem = document.createElement('div');
+                reservationItem.classList.add('reservation-item');
+                reservationItem.innerHTML = `
+                    <div class="reservation-info">
+                        Número: <strong>${String(reservation.number).padStart(2, '0')}</strong> -
+                        Reservado por: <strong>${reservation.name}</strong> (${new Date(reservation.timestamp).toLocaleString()})
+                    </div>
+                    <div class="reservation-actions">
+                        <button class="btn" onclick="confirmReservation(${reservation.number}, '${reservation.name}', ${reservation.timestamp})">Confirmar</button>
+                        <button class="btn btn-danger" onclick="rejectReservation(${reservation.number}, ${reservation.timestamp})">Rechazar</button>
+                    </div>
+                `;
+                pendingList.appendChild(reservationItem);
+            });
+        }
+
+        /**
+         * Selects a number in the manual management panel.
+         * @param {number} number - The number to select.
+         */
+        function selectNumberForManagement(number) {
+            document.getElementById('selectedNumber').value = number;
+            currentEditingId = number; // Set the current editing ID
+
+            const numberInfo = rifaData.numbers[number];
+            if (numberInfo) {
+                document.getElementById('buyerName').value = numberInfo.name || '';
+                showNotification(`Número ${String(number).padStart(2, '0')} seleccionado. Estado: ${numberInfo.status === 'paid' ? 'Pagado' : (numberInfo.status === 'sold' ? 'Vendido' : 'Pendiente')}`, 'info');
+            } else {
+                document.getElementById('buyerName').value = '';
+                showNotification(`Número ${String(number).padStart(2, '0')} seleccionado. Disponible.`, 'info');
+            }
+        }
+
+        /**
+         * Handles selling a number manually.
+         */
+        function sellNumber() {
+            const number = parseInt(document.getElementById('selectedNumber').value);
+            const name = document.getElementById('buyerName').value.trim();
+
+            if (isNaN(number) || number < 0 || number > 99) {
+                showNotification('Por favor, selecciona un número válido (0-99).', 'error');
+                return;
+            }
+            if (!name) {
+                showNotification('Por favor, ingresa el nombre del comprador.', 'error');
+                return;
+            }
+
+            if (rifaData.numbers[number] && rifaData.numbers[number].status !== 'available') {
+                showNotification(`El número ${String(number).padStart(2, '0')} ya está ${rifaData.numbers[number].status === 'paid' ? 'pagado' : 'vendido/pendiente'}.`, 'error');
+                return;
+            }
+
+            // Add to numbers and buyers
+            rifaData.numbers[number] = {
+                status: 'sold', // Mark as sold, not yet paid
+                name: name,
+                date: new Date().toISOString(),
+                origin: 'Admin'
+            };
+            rifaData.buyers.push({
+                number: number,
+                name: name,
+                status: 'sold',
+                date: new Date().toISOString(),
+                origin: 'Admin'
+            });
+
+            saveData();
+            generateNumbersGrid();
+            updateStats();
+            updateBuyersTable();
+            showNotification(`Número ${String(number).padStart(2, '0')} vendido a ${name}.`, 'success');
+            document.getElementById('buyerName').value = ''; // Clear name field
+        }
+
+        /**
+         * Marks a sold/pending number as paid.
+         */
+        function markAsPaid() {
+            const number = parseInt(document.getElementById('selectedNumber').value);
+
+            if (isNaN(number) || number < 0 || number > 99) {
+                showNotification('Por favor, selecciona un número válido (0-99).', 'error');
+                return;
+            }
+
+            const numberInfo = rifaData.numbers[number];
+            if (!numberInfo) {
+                showNotification(`El número ${String(number).padStart(2, '0')} no está vendido.`, 'error');
+                return;
+            }
+            if (numberInfo.status === 'paid') {
+                showNotification(`El número ${String(number).padStart(2, '0')} ya está pagado.`, 'info');
+                return;
+            }
+
+            // Update status in numbers
+            rifaData.numbers[number].status = 'paid';
+
+            // Update status in buyers list
+            const buyerIndex = rifaData.buyers.findIndex(b => b.number === number);
+            if (buyerIndex !== -1) {
+                rifaData.buyers[buyerIndex].status = 'paid';
+            } else {
+                // This case should ideally not happen if data is consistent
+                console.warn(`Buyer for number ${number} not found in buyers list.`);
+                rifaData.buyers.push({
+                    number: number,
+                    name: numberInfo.name || 'Desconocido',
+                    status: 'paid',
+                    date: new Date().toISOString(),
+                    origin: numberInfo.origin || 'Admin'
+                });
+            }
+
+            saveData();
+            generateNumbersGrid();
+            updateStats();
+            updateBuyersTable();
+            updatePendingReservations(); // In case it was pending
+            showNotification(`Número ${String(number).padStart(2, '0')} marcado como pagado.`, 'success');
+            document.getElementById('buyerName').value = ''; // Clear name field
+        }
+
+        /**
+         * Marks a sold or pending number as unpaid, reverting it to available.
+         */
+        function markAsUnpaid() {
+            const number = parseInt(document.getElementById('selectedNumber').value);
+
+            if (isNaN(number) || number < 0 || number > 99) {
+                showNotification('Por favor, selecciona un número válido (0-99).', 'error');
+                return;
+            }
+
+            const numberInfo = rifaData.numbers[number];
+            if (!numberInfo) {
+                showNotification(`El número ${String(number).padStart(2, '0')} no está vendido ni reservado.`, 'info');
+                return;
+            }
+
+            if (numberInfo.status === 'paid') {
+                showNotification(`El número ${String(number).padStart(2, '0')} ya está pagado. Usa "Cancelar Venta" si deseas liberarlo.`, 'error');
+                return;
+            }
+
+            showCustomModal(`¿Estás seguro de que quieres marcar el número ${String(number).padStart(2, '0')} como "No Pagado"? Esto lo liberará.`, () => {
+                // Remove from numbers
+                delete rifaData.numbers[number];
+
+                // Remove from buyers list (if it was there as sold/pending)
+                rifaData.buyers = rifaData.buyers.filter(b => b.number !== number);
+
+                // Remove from pending reservations (if it was there)
+                rifaData.pendingReservations = rifaData.pendingReservations.filter(r => r.number !== number);
+
+                saveData();
+                generateNumbersGrid();
+                updateStats();
+                updateBuyersTable();
+                updatePendingReservations();
+                showNotification(`Número ${String(number).padStart(2, '0')} marcado como "No Pagado" y liberado.`, 'success');
+                document.getElementById('buyerName').value = ''; // Clear name field
+            });
+        }
+
+        /**
+         * Cancels a sale/reservation for a number.
+         */
+        function cancelSale() {
+            const number = parseInt(document.getElementById('selectedNumber').value);
+
+            if (isNaN(number) || number < 0 || number > 99) {
+                showNotification('Por favor, selecciona un número válido (0-99).', 'error');
+                return;
+            }
+
+            if (!rifaData.numbers[number]) {
+                showNotification(`El número ${String(number).padStart(2, '0')} no está vendido ni reservado.`, 'info');
+                return;
+            }
+
+            showCustomModal(`¿Estás seguro de que quieres cancelar la venta/reserva del número ${String(number).padStart(2, '0')}?`, () => {
+                // Remove from numbers
+                delete rifaData.numbers[number];
+
+                // Remove from buyers list
+                rifaData.buyers = rifaData.buyers.filter(b => b.number !== number);
+
+                // Remove from pending reservations if it was there
+                rifaData.pendingReservations = rifaData.pendingReservations.filter(r => r.number !== number);
+
+                saveData();
+                generateNumbersGrid();
+                updateStats();
+                updateBuyersTable();
+                updatePendingReservations();
+                showNotification(`Venta/reserva del número ${String(number).padStart(2, '0')} cancelada.`, 'success');
+                document.getElementById('buyerName').value = ''; // Clear name field
+            });
+        }
+
+        /**
+         * Edits an existing buyer's information.
+         * @param {number} number - The number associated with the buyer to edit.
+         */
+        function editBuyer(number) {
+            selectNumberForManagement(number); // Pre-fill the number and name
+            showNotification(`Editando número ${String(number).padStart(2, '0')}. Cambia el nombre o estado y usa los botones de acción.`, 'info');
+        }
+
+        /**
+         * Removes a buyer from the list and frees up their number.
+         * @param {number} number - The number associated with the buyer to remove.
+         */
+        function removeBuyer(number) {
+            showCustomModal(`¿Estás seguro de que quieres eliminar al comprador del número ${String(number).padStart(2, '0')}? Esto también liberará el número.`, () => {
+                // Remove from numbers
+                delete rifaData.numbers[number];
+
+                // Remove from buyers list
+                rifaData.buyers = rifaData.buyers.filter(b => b.number !== number);
+
+                // Remove from pending reservations if it was there
+                rifaData.pendingReservations = rifaData.pendingReservations.filter(r => r.number !== number);
+
+                saveData();
+                generateNumbersGrid();
+                updateStats();
+                updateBuyersTable();
+                updatePendingReservations();
+                showNotification(`Comprador del número ${String(number).padStart(2, '0')} eliminado y número liberado.`, 'success');
+                document.getElementById('buyerName').value = ''; // Clear name field
+            });
+        }
+
+        /**
+         * Confirms a pending reservation, marking the number as 'paid' and moving it to the buyers list.
+         * @param {number} number - The number to confirm.
+         * @param {string} name - The name of the client who reserved.
+         * @param {number} timestamp - The timestamp of the reservation.
+         */
+        function confirmReservation(number, name, timestamp) {
+            // Check if the number is still pending
+            const reservationIndex = rifaData.pendingReservations.findIndex(r => r.number === number && r.timestamp === timestamp);
+            if (reservationIndex === -1 && rifaData.numbers[number]?.status !== 'pending') {
+                showNotification(`La reserva para el número ${String(number).padStart(2, '0')} ya no está pendiente o fue procesada.`, 'error');
+                return;
+            }
+
+            // If it was pending, remove it from pending list
+            if (reservationIndex !== -1) {
+                rifaData.pendingReservations.splice(reservationIndex, 1);
+            }
+
+            // Update numbers data (or create if it was only pending)
+            rifaData.numbers[number] = {
+                status: 'paid', // Directly mark as paid upon confirmation
+                name: name,
+                date: new Date().toISOString(),
+                origin: 'Cliente'
+            };
+
+            // Add/Update in buyers list
+            const buyerIndex = rifaData.buyers.findIndex(b => b.number === number);
+            if (buyerIndex !== -1) {
+                rifaData.buyers[buyerIndex] = {
+                    number: number,
+                    name: name,
+                    status: 'paid',
+                    date: new Date().toISOString(),
+                    origin: 'Cliente'
+                };
+            } else {
+                rifaData.buyers.push({
+                    number: number,
+                    name: name,
+                    status: 'paid',
+                    date: new Date().toISOString(),
+                    origin: 'Cliente'
+                });
+            }
+
+            saveData();
+            generateNumbersGrid();
+            updateStats();
+            updateBuyersTable();
+            updatePendingReservations();
+            showNotification(`Reserva del número ${String(number).padStart(2, '0')} por ${name} confirmada y pagada.`, 'success');
+        }
+
+        /**
+         * Rejects a pending reservation, freeing up the number.
+         * @param {number} number - The number to reject.
+         * @param {number} timestamp - The timestamp of the reservation.
+         */
+        function rejectReservation(number, timestamp) {
+            showCustomModal(`¿Estás seguro de que quieres rechazar la reserva del número ${String(number).padStart(2, '0')}?`, () => {
+                const reservationIndex = rifaData.pendingReservations.findIndex(r => r.number === number && r.timestamp === timestamp);
+                if (reservationIndex !== -1) {
+                    rifaData.pendingReservations.splice(reservationIndex, 1);
+                }
+
+                // Also remove from numbers if it was only pending
+                if (rifaData.numbers[number] && rifaData.numbers[number].status === 'pending') {
+                    delete rifaData.numbers[number];
+                }
+
+                // Remove from buyers list if it was added there as pending
+                rifaData.buyers = rifaData.buyers.filter(b => !(b.number === number && b.status === 'pending'));
+
+                saveData();
+                generateNumbersGrid();
+                updateStats();
+                updateBuyersTable();
+                updatePendingReservations();
+                showNotification(`Reserva del número ${String(number).padStart(2, '0')} rechazada. Número disponible.`, 'info');
+            });
+        }
+
+        /**
+         * Function to manually save all changes from the admin panel.
+         */
+        function saveAdminChanges() {
+            saveData();
+            showNotification('Cambios guardados exitosamente', 'success');
+        }
+
+
+        // --- Client View Functions ---
+
+        /**
+         * Displays the client-facing view of the raffle.
+         * @param {string} clientId - The client ID from the URL.
+         */
+        function showClientView(clientId) {
+            // Validate client ID
+            if (clientId !== rifaData.clientUrlId && rifaData.clientUrlId) {
+                document.body.innerHTML = `
+                    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; text-align: center; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; font-family: 'Inter', sans-serif;">
+                        <div>
+                            <h1 style="color: white; font-size: 3em; margin-bottom: 20px; text-shadow: 2px 2px 5px rgba(0,0,0,0.5);">❌ URL Inválida</h1>
+                            <p style="font-size: 1.5em; margin-bottom: 10px;">Esta URL no es válida o ha expirado.</p>
+                            <p style="font-size: 1.1em; color: #f0f0f0;">Por favor, contacta al administrador para obtener la URL correcta.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Hide admin-specific elements and show client-specific ones
+            document.body.innerHTML = `
+                <div class="container">
+                    <div class="header">
+                        <div class="client-badge">👤 VISTA CLIENTE</div>
+                        <h1>GRAN RIFA DE</h1>
+                    </div>
+
+                    <div class="laptop-info">
+                        <div class="laptop-details">
+                            <h2>LAPTOP HP G4</h2>
+                            <p>MUY POCO USO RANGO B</p>
+                        </div>
+                        <div class="laptop-image">
+                            ${rifaData.laptopImage ? `<img src="${rifaData.laptopImage}" alt="Laptop HP G4">` : '<div class="upload-text">HP Pavilion g4</div>'}
+                        </div>
+                        <div class="price">
+                            VALOR<br>2$
+                        </div>
+                    </div>
+
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-number" id="clientTotalSold">0</div>
+                            <div class="stat-label">Números Vendidos</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="clientAvailableNumbers">100</div>
+                            <div class="stat-label">Números Disponibles</div>
+                        </div>
+                    </div>
+
+                    <div class="numbers-grid" id="clientNumbersGrid">
+                        <!-- Numbers will be generated here -->
+                    </div>
+
+                    <div class="date-info">
+                        <p>PARA EL 3 DE AGOSTO 2025</p>
+                    </div>
+
+                    <div class="contact-info">
+                        <p><strong>YAPPY:</strong> 69436925</p>
+                        <p><strong>BOLETO NO PAGADO ES NULO</strong></p>
+                    </div>
+                </div>
+
+                <div class="notification" id="clientNotification"></div>
+
+                <!-- Modal for reserving number -->
+                <div id="reserveModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeReserveModal()">&times;</span>
+                        <h3>Reservar Número</h3>
+                        <div class="form-group">
+                            <label>Número seleccionado:</label>
+                            <input type="text" id="selectedNumberClient" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="clientName">Tu nombre:</label>
+                            <input type="text" id="clientName" placeholder="Ingresa tu nombre" required>
+                        </div>
+                        <button class="btn" onclick="reserveNumberClient()">Reservar</button>
+                    </div>
+                </div>
+            `;
+
+            // Apply client-specific body class for potential styling differences
+            document.body.classList.add('client-mode');
+
+            // Re-render numbers grid for client view
+            generateClientNumbersGrid();
+            updateStats(); // Update client stats as well
+        }
+
+        /**
+         * Generates the numbers grid for the client view.
+         * Only available numbers are clickable.
+         */
+        function generateClientNumbersGrid() {
+            const clientNumbersGrid = document.getElementById('clientNumbersGrid');
+            clientNumbersGrid.innerHTML = '';
+
+            for (let i = 0; i < 100; i++) {
+                const numberBox = document.createElement('div');
+                numberBox.classList.add('number-box');
+                numberBox.dataset.number = i;
+
+                const numberText = document.createElement('span');
+                numberText.classList.add('number-text');
+                numberText.textContent = String(i).padStart(2, '0');
+                numberBox.appendChild(numberText);
+
+                const numberInfo = rifaData.numbers[i];
+                if (numberInfo) {
+                    numberBox.classList.add(numberInfo.status);
+                    if (numberInfo.name) {
+                        const buyerNameSpan = document.createElement('span');
+                        buyerNameSpan.classList.add('buyer-name');
+                        buyerNameSpan.textContent = numberInfo.name;
+                        numberBox.appendChild(buyerNameSpan);
+                    }
+                    numberBox.style.cursor = 'not-allowed'; // Not clickable if sold/paid/pending
+                } else {
+                    // Only available numbers are clickable
+                    numberBox.addEventListener('click', () => openReserveModal(i));
+                }
+                clientNumbersGrid.appendChild(numberBox);
+            }
+        }
+
+        /**
+         * Opens the reservation modal for clients.
+         * @param {number} number - The number selected by the client.
+         */
+        function openReserveModal(number) {
+            document.getElementById('selectedNumberClient').value = String(number).padStart(2, '0');
+            document.getElementById('reserveModal').style.display = 'flex'; // Show modal
+        }
+
+        /**
+         * Closes the reservation modal.
+         */
+        function closeReserveModal() {
+            document.getElementById('reserveModal').style.display = 'none';
+            document.getElementById('clientName').value = ''; // Clear name input
+        }
+
+        /**
+         * Handles client's reservation request.
+         */
+        function reserveNumberClient() {
+            const number = parseInt(document.getElementById('selectedNumberClient').value);
+            const clientName = document.getElementById('clientName').value.trim();
+
+            if (!clientName) {
+                showClientNotification('Por favor, ingresa tu nombre para reservar el número.', 'error');
+                return;
+            }
+
+            if (rifaData.numbers[number]) {
+                showClientNotification(`El número ${String(number).padStart(2, '0')} ya no está disponible. Por favor, elige otro.`, 'error');
+                closeReserveModal();
+                generateClientNumbersGrid(); // Re-render to show updated status
+                return;
+            }
+
+            const timestamp = Date.now(); // Unique timestamp for this reservation
+
+            if (rifaData.autoMode) {
+                // If auto mode is on, confirm immediately
+                rifaData.numbers[number] = {
+                    status: 'paid', // Auto-confirm as paid
+                    name: clientName,
+                    date: new Date().toISOString(),
+                    origin: 'Cliente'
+                };
+                rifaData.buyers.push({
+                    number: number,
+                    name: clientName,
+                    status: 'paid',
+                    date: new Date().toISOString(),
+                    origin: 'Cliente'
+                });
+                showClientNotification(`¡Felicidades! Has reservado y pagado el número ${String(number).padStart(2, '0')}.`, 'success');
+            } else {
+                // If auto mode is off, add to pending reservations
+                rifaData.numbers[number] = {
+                    status: 'pending', // Mark as pending
+                    name: clientName,
+                    date: new Date().toISOString(),
+                    origin: 'Cliente'
+                };
+                rifaData.pendingReservations.push({
+                    number: number,
+                    name: clientName,
+                    timestamp: timestamp // Add timestamp for unique identification of reservation
+                });
+                // Also add to buyers list as pending so it shows up in admin table
+                rifaData.buyers.push({
+                    number: number,
+                    name: clientName,
+                    status: 'pending',
+                    date: new Date().toISOString(),
+                    origin: 'Cliente'
+                });
+                showClientNotification(`¡Número ${String(number).padStart(2, '0')} reservado! Espera la confirmación del administrador.`, 'info');
+            }
+
+            saveData();
+            closeReserveModal();
+            generateClientNumbersGrid();
+            updateStats(); // Update client stats after reservation
+        }
+
+        /**
+         * Displays a notification message specifically for the client view.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success' or 'error' for styling.
+         */
+        function showClientNotification(message, type = 'success') {
+            const notification = document.getElementById('clientNotification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // --- Custom Modal for Confirmation (replaces alert/confirm) ---
+        let customModalCallback = null;
+
+        function showCustomModal(message, callback) {
+            const modalHtml = `
+                <div id="customConfirmModal" class="modal" style="display: flex;">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeCustomModal()">&times;</span>
+                        <h3 style="color: #f1c40f;">Confirmación</h3>
+                        <p style="text-align: center; margin-bottom: 25px; font-size: 1.1em;">${message}</p>
+                        <div style="display: flex; justify-content: center; gap: 15px;">
+                            <button class="btn btn-danger" onclick="executeCustomModalCallback(false)">Cancelar</button>
+                            <button class="btn" onclick="executeCustomModalCallback(true)">Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            customModalCallback = callback;
+        }
+
+        function closeCustomModal() {
+            const modal = document.getElementById('customConfirmModal');
+            if (modal) {
+                modal.remove();
+            }
+            customModalCallback = null;
+        }
+
+        function executeCustomModalCallback(confirmed) {
+            if (customModalCallback) {
+                if (confirmed) {
+                    customModalCallback();
+                }
+            }
+            closeCustomModal();
+        }
+
+        // --- Simulation for Client Data (Admin View Only) ---
+        /**
+         * Simulates client reservations for testing purposes in admin view.
+         * This function would be replaced by actual backend communication in a real app.
+         */
+        function simulateClientData() {
+            // Simulate a client reserving number 5 and 12
+            setTimeout(() => {
+                if (!rifaData.numbers[5]) {
+                    rifaData.pendingReservations.push({ number: 5, name: 'Ana Garcia', timestamp: Date.now() - 50000 });
+                    rifaData.numbers[5] = { status: 'pending', name: 'Ana Garcia', date: new Date(Date.now() - 50000).toISOString(), origin: 'Cliente' };
+                    rifaData.buyers.push({ number: 5, name: 'Ana Garcia', status: 'pending', date: new Date(Date.now() - 50000).toISOString(), origin: 'Cliente' });
+                    saveData();
+                    updatePendingReservations();
+                    generateNumbersGrid();
+                    updateStats();
+                    // showNotification('Nueva reserva pendiente del cliente: Número 05 por Ana Garcia', 'info');
+                }
+            }, 5000);
+
+            setTimeout(() => {
+                if (!rifaData.numbers[12]) {
+                    rifaData.pendingReservations.push({ number: 12, name: 'Luis Perez', timestamp: Date.now() - 20000 });
+                    rifaData.numbers[12] = { status: 'pending', name: 'Luis Perez', date: new Date(Date.now() - 20000).toISOString(), origin: 'Cliente' };
+                    rifaData.buyers.push({ number: 12, name: 'Luis Perez', status: 'pending', date: new Date(Date.now() - 20000).toISOString(), origin: 'Cliente' });
+                    saveData();
+                    updatePendingReservations();
+                    generateNumbersGrid();
+                    updateStats();
+                    // showNotification('Nueva reserva pendiente del cliente: Número 12 por Luis Perez', 'info');
+                }
+            }, 10000);
+        }
+
+        // Initialize the app when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
+
