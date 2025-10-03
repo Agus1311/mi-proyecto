@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rifa Laptop HP G4 - Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>AMENAZA ZERO - Security Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
-        /* Base styles */
         * {
             margin: 0;
             padding: 0;
@@ -14,1973 +13,1704 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            /* More vibrant and dynamic gradient */
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
-            min-height: 100vh;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #1e3a8a 0%, #0f172a 100%);
+            padding: 1.2rem 2rem;
             display: flex;
-            justify-content: center;
-            align-items: flex-start; /* Align to top to prevent content from being squashed */
-            overflow-y: auto; /* Allow scrolling for long content */
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border-bottom: 2px solid #3b82f6;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #60a5fa;
+            text-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+            cursor: pointer;
+        }
+
+        .logo span {
+            color: #ef4444;
+        }
+
+        .status-indicator {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .pulse {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .pulse.active {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .pulse.alert {
+            background: #ef4444;
+            box-shadow: 0 0 10px #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: #0f172a;
+            padding: 2rem 1rem;
+            transition: left 0.3s ease;
+            z-index: 1100;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .sidebar-close:hover {
+            color: #ef4444;
+        }
+
+        .menu-btn {
+            background: transparent;
+            border: 2px solid #3b82f6;
+            color: #60a5fa;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .menu-btn:hover {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .menu-item {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: #1e293b;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .menu-item:hover {
+            background: #334155;
+            border-left-color: #3b82f6;
+        }
+
+        .menu-item.active {
+            background: #334155;
+            border-left-color: #3b82f6;
         }
 
         .container {
-            max-width: 1200px;
-            width: 100%;
+            padding: 2rem;
+            max-width: 1800px;
             margin: 0 auto;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.08); /* Slightly more opaque for better contrast */
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); /* Stronger, more defined shadow */
-            backdrop-filter: blur(15px); /* Stronger blur effect */
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        /* Header styling */
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            position: relative;
+        /* Ocultar secciones no activas */
+        .dashboard-section {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
         }
 
-        .header h1 {
-            font-size: 3.8em; /* Larger font size */
-            font-weight: 800; /* Extra bold */
-            margin-bottom: 15px;
-            background: linear-gradient(45deg, #ff9a00, #ff5a00); /* Orange gradient for title */
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.6); /* More pronounced text shadow */
-            letter-spacing: 2px;
+        .dashboard-section.active {
+            display: block;
         }
 
-        .admin-badge, .client-badge {
-            background: linear-gradient(45deg, #e74c3c, #c0392b); /* Red gradient */
-            color: white;
-            padding: 8px 20px;
-            border-radius: 25px; /* More rounded */
-            font-size: 1em;
-            font-weight: 700;
-            display: inline-block;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s ease-in-out;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        .client-badge {
-            background: linear-gradient(45deg, #27ae60, #2ecc71); /* Green gradient for client badge */
-        }
-
-        .admin-badge:hover, .client-badge:hover {
-            transform: translateY(-3px);
-        }
-
-        /* Laptop Info section */
-        .laptop-info {
+        .action-bar {
             display: flex;
-            flex-wrap: wrap; /* Allow wrapping on smaller screens */
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-            background: rgba(255, 255, 255, 0.15); /* Slightly brighter background */
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            gap: 20px; /* Space between items */
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
         }
 
-        .laptop-details {
-            flex: 2; /* Take more space */
-            min-width: 250px; /* Ensure it doesn't get too small */
-        }
-
-        .laptop-details h2 {
-            font-size: 3em; /* Larger title */
-            margin-bottom: 10px;
-            color: #8e44ad; /* Purple accent */
-            font-weight: 700;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-        }
-
-        .laptop-details p {
-            font-size: 1.3em; /* Larger text */
-            margin-bottom: 15px;
-            color: #ecf0f1;
-        }
-
-        .laptop-image {
-            width: 250px; /* Larger image container */
-            height: 180px;
-            background: #4a90e2;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8em;
-            font-weight: bold;
-            overflow: hidden;
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            flex-shrink: 0; /* Prevent shrinking */
-        }
-
-        .laptop-image:hover {
-            transform: scale(1.03);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        .laptop-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 15px;
-        }
-
-        .laptop-image input {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .upload-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            pointer-events: none;
-            z-index: 1;
-            background: rgba(0, 0, 0, 0.75);
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1em;
-            color: #f0f0f0;
-        }
-
-        .image-controls {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            display: flex;
-            gap: 8px;
-            z-index: 2;
-        }
-
-        .image-btn {
-            background: rgba(255, 255, 255, 0.9);
+        .action-btn {
+            padding: 0.8rem 1.5rem;
             border: none;
-            border-radius: 5px;
-            padding: 8px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 14px;
-            color: #333;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: background 0.2s ease;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .image-btn:hover {
-            background: rgba(255, 255, 255, 1);
-            transform: translateY(-1px);
+        .action-btn.primary {
+            background: #3b82f6;
+            color: white;
         }
 
-        .price {
-            font-size: 4.5em; /* Even larger price */
-            font-weight: 800;
-            color: #ffd700; /* Gold color */
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.6);
-            text-align: right;
-            flex: 1;
-            min-width: 150px;
+        .action-btn.primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
         }
 
-        /* Stats section */
-        .stats {
+        .action-btn.danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .action-btn.danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .action-btn.success {
+            background: #10b981;
+            color: white;
+        }
+
+        .action-btn.success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .action-btn.warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .action-btn.warning:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Slightly larger min-width */
-            gap: 25px; /* More space between cards */
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.2s ease-in-out;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid #475569;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
         }
 
-        .stat-number {
-            font-size: 2.8em; /* Larger number */
-            font-weight: 800;
-            color: #00f2fe; /* Bright cyan accent */
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-            margin-bottom: 5px;
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
         }
 
         .stat-label {
-            font-size: 1.1em;
-            margin-top: 5px;
-            color: #e0e0e0;
-        }
-
-        /* URL Share section */
-        .url-share, .management-panel, .buyers-table, .pending-reservations, .auto-mode {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 30px;
-            border-radius: 20px;
-            margin-bottom: 40px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .url-share h3, .management-panel h3, .buyers-table h3, .pending-reservations h3, .auto-mode h3 {
-            margin-bottom: 20px;
-            font-size: 1.8em;
-            color: #f0f0f0;
-            font-weight: 700;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-        }
-
-        .url-share h3 {
-            color: #3498db; /* Blue accent for URL section */
-        }
-
-        .pending-reservations h3 {
-            color: #f39c12; /* Orange accent for pending */
-        }
-
-        .auto-mode h3 {
-            color: #9b59b6; /* Purple accent for auto mode */
-        }
-
-        .url-input {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .url-input input {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 17px;
-            background: rgba(255, 255, 255, 0.95);
-            color: #333;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
-            min-width: 200px; /* Ensure input is not too small */
-        }
-
-        /* Buttons */
-        .btn {
-            background: linear-gradient(45deg, #27ae60, #2ecc71); /* Green gradient */
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 17px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            flex-grow: 1; /* Allow buttons to grow */
-        }
-
-        .btn:hover {
-            background: linear-gradient(45deg, #219a52, #27ae60);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-        }
-
-        .btn-danger {
-            background: linear-gradient(45deg, #e74c3c, #c0392b); /* Red gradient */
-        }
-
-        .btn-danger:hover {
-            background: linear-gradient(45deg, #c0392b, #a52a22);
-        }
-
-        .btn-info {
-            background: linear-gradient(45deg, #3498db, #2980b9); /* Blue gradient */
-        }
-
-        .btn-info:hover {
-            background: linear-gradient(45deg, #2980b9, #1f618d);
-        }
-
-        .btn-warning { /* New style for "No Pago" button */
-            background: linear-gradient(45deg, #f39c12, #e67e22); /* Orange gradient */
-        }
-
-        .btn-warning:hover {
-            background: linear-gradient(45deg, #e67e22, #d35400);
-        }
-
-        /* Numbers Grid */
-        .numbers-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(65px, 1fr)); /* Adjust column size for better fit */
-            gap: 8px; /* Slightly larger gap */
-            margin-bottom: 40px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .number-box {
-            width: 65px; /* Consistent size */
-            height: 65px;
-            border: 3px solid #f0f0f0; /* Thicker border */
-            display: flex;
-            flex-direction: column; /* For number and name */
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5em; /* Larger number font */
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            border-radius: 10px; /* Rounded corners for boxes */
-            background: rgba(255, 255, 255, 0.05); /* Default background */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .number-box:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.08); /* More pronounced hover effect */
-            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .number-box.sold {
-            background: linear-gradient(45deg, #e74c3c, #c0392b); /* Red gradient for sold */
-            color: white;
-            border-color: #e74c3c;
-        }
-
-        .number-box.paid {
-            background: linear-gradient(45deg, #27ae60, #2ecc71); /* Green gradient for paid */
-            color: white;
-            border-color: #27ae60;
-        }
-
-        .number-box.pending {
-            background: linear-gradient(45deg, #f39c12, #e67e22); /* Orange gradient for pending */
-            color: white;
-            border-color: #f39c12;
-        }
-
-        .buyer-name {
-            position: absolute;
-            bottom: 2px; /* Adjust position */
-            font-size: 0.7em;
-            background: rgba(0, 0, 0, 0.85); /* Darker background for readability */
-            padding: 2px 6px;
-            border-radius: 4px;
-            white-space: nowrap;
-            max-width: 90%; /* Allow more width */
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #f0f0f0;
-            transform: translateX(-50%);
-            left: 50%;
-        }
-        
-        .number-text {
-            margin-bottom: 5px; /* Space between number and name */
-        }
-
-        /* Date and Contact Info */
-        .date-info, .contact-info {
-            text-align: center;
-            font-size: 1.6em; /* Larger font */
-            margin-bottom: 25px;
-            color: #e0e0e0;
-            font-weight: 600;
-        }
-
-        .contact-info p {
-            margin-bottom: 8px;
-        }
-
-        /* Management Panel */
-        .management-panel {
-            margin-bottom: 40px;
-        }
-
-        .management-panel > div {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive columns */
-            gap: 20px;
-            margin-top: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 700;
-            color: #f0f0f0;
-            font-size: 1.1em;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 17px;
-            background: rgba(255, 255, 255, 0.95);
-            color: #333;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Buyers Table */
-        .buyers-table h3 {
-            color: #1abc9c; /* Teal accent for table title */
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: separate; /* Use separate for rounded corners on cells */
-            border-spacing: 0;
-            margin-top: 20px;
-            overflow: hidden; /* Ensures rounded corners apply */
-            border-radius: 10px;
-        }
-
-        .table th, .table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            color: #f0f0f0;
-        }
-
-        .table th {
-            background: rgba(255, 255, 255, 0.15);
-            font-weight: 700;
+            color: #94a3b8;
+            font-size: 0.9rem;
             text-transform: uppercase;
-            font-size: 0.95em;
-            letter-spacing: 0.5px;
         }
 
-        .table tr:last-child td {
-            border-bottom: none;
+        .stat-change {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
         }
 
-        .table tbody tr:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .stat-change.up {
+            color: #ef4444;
         }
 
-        .status-paid {
-            color: #2ecc71; /* Brighter green */
-            font-weight: 700;
+        .stat-change.down {
+            color: #10b981;
         }
 
-        .status-pending {
-            color: #f39c12; /* Brighter orange */
-            font-weight: 700;
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
         }
 
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            background: linear-gradient(45deg, #27ae60, #2ecc71);
-            color: white;
-            padding: 18px;
+        .chart-card {
+            background: #1e293b;
+            padding: 1.5rem;
             border-radius: 12px;
-            display: none;
-            z-index: 1000;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-            font-size: 1.1em;
-            font-weight: 600;
-            min-width: 250px;
-            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid #475569;
         }
 
-        .notification.error {
-            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        .chart-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #60a5fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .notification.show {
-            display: block;
-            animation: slideIn 0.4s ease-out forwards;
+        .chart-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 1px solid #475569;
+            color: #94a3b8;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .icon-btn:hover {
+            background: #334155;
+            color: #60a5fa;
+            border-color: #3b82f6;
+        }
+
+        .threat-list {
+            background: #1e293b;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid #475569;
+            margin-bottom: 2rem;
+        }
+
+        .threat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: #0f172a;
+            border-radius: 8px;
+            border-left: 4px solid #ef4444;
+            animation: slideIn 0.5s ease-out;
         }
 
         @keyframes slideIn {
             from {
-                transform: translateX(120%);
                 opacity: 0;
+                transform: translateX(-20px);
             }
             to {
-                transform: translateX(0);
                 opacity: 1;
+                transform: translateX(0);
             }
         }
 
-        /* Pending Reservations */
-        .pending-reservations {
-            margin-bottom: 40px;
-        }
-
-        .reservation-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 18px;
-            margin-bottom: 12px;
-            border-radius: 12px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        .reservation-info {
+        .threat-info {
             flex: 1;
-            min-width: 200px;
-            color: #e0e0e0;
         }
 
-        .reservation-info strong {
-            color: #f39c12;
+        .threat-title {
+            font-weight: bold;
+            color: #ef4444;
+            margin-bottom: 0.3rem;
         }
 
-        .reservation-actions {
+        .threat-details {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .threat-actions {
             display: flex;
-            gap: 10px;
+            gap: 0.5rem;
         }
 
-        /* Toggle Switch */
-        .toggle-switch {
-            position: relative;
-            width: 70px; /* Wider switch */
-            height: 35px; /* Taller switch */
-            background: #7f8c8d; /* Grey for off state */
-            border-radius: 17.5px;
-            cursor: pointer;
-            transition: background 0.3s ease-in-out;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+        .threat-severity {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
         }
 
-        .toggle-switch.active {
-            background: linear-gradient(45deg, #27ae60, #2ecc71); /* Green gradient for on state */
-        }
-
-        .toggle-slider {
-            position: absolute;
-            top: 4px; /* Adjust for new height */
-            left: 4px; /* Adjust for new width */
-            width: 27px; /* Larger slider */
-            height: 27px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s ease-in-out;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
-
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(35px); /* Adjust for new width */
-        }
-
-        .auto-mode-toggle {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .auto-mode-info {
-            font-size: 0.95em;
-            color: #bdc3c7;
-            margin-top: 15px;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1001; /* Sit on top */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: linear-gradient(135deg, #34495e, #2c3e50); /* Darker gradient for modal */
-            margin: auto;
-            padding: 30px;
-            border: 1px solid #888;
-            width: 90%;
-            max-width: 500px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            position: relative;
+        .severity-critical {
+            background: #ef4444;
             color: white;
-            backdrop-filter: blur(8px);
         }
 
-        .modal-content h3 {
-            font-size: 2em;
-            margin-bottom: 20px;
-            color: #f1c40f; /* Yellow accent for modal title */
+        .severity-high {
+            background: #f97316;
+            color: white;
+        }
+
+        .severity-medium {
+            background: #eab308;
+            color: #0f172a;
+        }
+
+        .severity-low {
+            background: #10b981;
+            color: white;
+        }
+
+        .log-console {
+            background: #0f172a;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid #475569;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        .log-entry {
+            padding: 0.5rem;
+            margin: 0.3rem 0;
+            border-left: 3px solid #3b82f6;
+            animation: logAppear 0.3s ease-out;
+        }
+
+        @keyframes logAppear {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .log-time {
+            color: #60a5fa;
+        }
+
+        .log-level {
+            font-weight: bold;
+        }
+
+        .log-level.error {
+            color: #ef4444;
+        }
+
+        .log-level.warning {
+            color: #f59e0b;
+        }
+
+        .log-level.info {
+            color: #10b981;
+        }
+
+        .attack-map {
+            background: #1e293b;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid #475569;
+            margin-bottom: 2rem;
             text-align: center;
         }
 
-        .modal .close {
-            color: #aaa;
+        .globe {
+            width: 300px;
+            height: 300px;
+            margin: 2rem auto;
+            position: relative;
+            background: radial-gradient(circle, #1e3a8a 0%, #0f172a 70%);
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(59, 130, 246, 0.3);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .attack-ping {
             position: absolute;
-            top: 15px;
-            right: 25px;
-            font-size: 35px;
-            font-weight: bold;
+            width: 10px;
+            height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #ef4444;
+            animation: ping 2s ease-out infinite;
+        }
+
+        @keyframes ping {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        .scroll-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 50%;
             cursor: pointer;
-            transition: color 0.2s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            transition: all 0.3s;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
         }
 
-        .modal .close:hover,
-        .modal .close:focus {
-            color: #e74c3c;
-            text-decoration: none;
+        .scroll-btn:hover {
+            background: #2563eb;
+            transform: scale(1.1);
         }
 
-        .modal .form-group input {
-            background: rgba(255, 255, 255, 0.9);
-            color: #333;
-        }
-
-        .modal .btn {
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            margin-top: 20px;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2.8em;
-            }
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
 
-            .laptop-info {
-                flex-direction: column;
-                text-align: center;
-            }
+        .modal-content {
+            background: #1e293b;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            transform: translateY(-50px);
+            transition: transform 0.3s ease-out;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
 
-            .laptop-details, .laptop-image, .price {
-                width: 100%;
-                text-align: center;
-            }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
 
-            .laptop-image {
-                margin-bottom: 20px;
-            }
+        .modal-title {
+            font-size: 1.5rem;
+            color: #60a5fa;
+        }
 
-            .price {
-                font-size: 3.5em;
-            }
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
 
-            .stats {
-                grid-template-columns: 1fr;
-            }
+        .modal-close:hover {
+            color: #ef4444;
+        }
 
-            .url-input {
-                flex-direction: column;
-            }
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 2rem;
+            background: #10b981;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            z-index: 3000;
+            animation: slideInRight 0.3s ease-out;
+            display: none;
+            min-width: 300px;
+        }
 
-            .btn {
-                width: 100%;
-            }
+        .notification.active {
+            display: block;
+        }
 
-            .numbers-grid {
-                grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
-                gap: 6px;
-            }
+        .notification.error {
+            background: #ef4444;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
 
-            .number-box {
-                width: 55px;
-                height: 55px;
-                font-size: 1.2em;
-            }
+        .notification.warning {
+            background: #f59e0b;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
 
-            .management-panel > div {
-                grid-template-columns: 1fr;
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
             }
-
-            .notification {
-                width: 90%;
-                left: 5%;
-                right: 5%;
-                top: 15px;
+            to {
+                opacity: 1;
+                transform: translateX(0);
             }
         }
 
-        @media (max-width: 480px) {
-            body {
-                padding: 10px;
-            }
-
-            .container {
-                padding: 15px;
-            }
-
-            .header h1 {
-                font-size: 2.2em;
-            }
-
-            .laptop-details h2 {
-                font-size: 2em;
-            }
-
-            .laptop-details p {
-                font-size: 1em;
-            }
-
-            .price {
-                font-size: 3em;
-            }
-
-            .stat-number {
-                font-size: 2.2em;
-            }
-
-            .stat-label {
-                font-size: 0.9em;
-            }
-
-            .url-share h3, .management-panel h3, .buyers-table h3, .pending-reservations h3, .auto-mode h3 {
-                font-size: 1.4em;
-            }
-
-            .url-input input, .form-group input, .form-group select, .btn {
-                font-size: 15px;
-                padding: 10px;
-            }
-
-            .number-box {
-                width: 45px;
-                height: 45px;
-                font-size: 1em;
-            }
-
-            .date-info, .contact-info {
-                font-size: 1.2em;
-            }
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
         }
+
+        .agent-card {
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .agent-card.disconnected {
+            border-left-color: #ef4444;
+        }
+        
+        .agent-card.disconnected:hover {
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+        }
+
+        .agent-name {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .agent-status {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-input {
+            padding: 0.6rem 1rem;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #e0e0e0;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-select {
+            padding: 0.6rem 1rem;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+        }
+        
+        #threatsList {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Estilos específicos para secciones internas */
+        .internal-page {
+            background: #1e293b;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid #475569;
+            margin-top: 2rem;
+        }
+
+        .internal-page h2 {
+            color: #60a5fa;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="admin-badge">🔒 PANEL ADMINISTRADOR</div>
-            <h1>GRAN RIFA DE</h1>
+    <div class="sidebar" id="sidebar">
+        <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+        <h3 style="color: #60a5fa; margin-bottom: 1.5rem;">📊 Módulos</h3>
+        <div class="menu-item active" data-section="dashboard" onclick="showSection('dashboard')">
+            🏠 Dashboard Principal
         </div>
-
-        <div class="laptop-info">
-            <div class="laptop-details">
-                <h2>LAPTOP HP G4</h2>
-                <p>MUY POCO USO RANGO B</p>
-            </div>
-            <div class="laptop-image" id="laptopImageContainer">
-                <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)">
-                <div class="upload-text" id="uploadText">
-                    <div>📷</div>
-                    <div>Subir imagen</div>
-                </div>
-                <img id="laptopImage" style="display: none;">
-                <div class="image-controls" id="imageControls" style="display: none;">
-                    <button class="image-btn" onclick="changeImage()" title="Cambiar imagen">📷</button>
-                    <button class="image-btn" onclick="removeImage()" title="Quitar imagen">🗑️</button>
-                </div>
-            </div>
-            <div class="price">
-                VALOR<br>2$
-            </div>
+        <div class="menu-item" data-section="agents" onclick="showSection('agents')">
+            🖥️ Agentes (247 activos)
         </div>
-
-        <div class="auto-mode">
-            <h3>🤖 Modo Automático</h3>
-            <div class="auto-mode-toggle">
-                <div class="toggle-switch" id="autoModeToggle" onclick="toggleAutoMode()">
-                    <div class="toggle-slider"></div>
-                </div>
-                <span id="autoModeStatus">Desactivado</span>
-            </div>
-            <div class="auto-mode-info">
-                Cuando está activado, las reservas de clientes se confirman automáticamente como ventas.
-            </div>
+        <div class="menu-item" data-section="security" onclick="showSection('security')">
+            🛡️ Eventos de Seguridad
         </div>
-
-        <div class="url-share">
-            <h3>🔗 URL Para Clientes</h3>
-            <div class="url-input">
-                <input type="text" id="clientUrl" readonly value="[Genera una URL única para tus clientes]">
-                <button class="btn btn-info" onclick="copyUrl()">Copiar URL</button>
-                <button class="btn" onclick="generateClientUrl()">Generar Nueva URL</button>
-            </div>
-            <p style="font-size: 0.9em; color: #ccc; margin-top: 10px;">
-                📱 Comparte esta URL con tus clientes para que puedan reservar números
-            </p>
+        <div class="menu-item" data-section="integrity" onclick="showSection('integrity')">
+            📁 Integridad de Archivos
         </div>
-
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-number" id="totalSold">0</div>
-                <div class="stat-label">Números Vendidos</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalPaid">0</div>
-                <div class="stat-label">Pagos Confirmados</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalRevenue">$0</div>
-                <div class="stat-label">Ingresos Totales</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="availableNumbers">100</div>
-                <div class="stat-label">Números Disponibles</div>
-            </div>
+        <div class="menu-item" data-section="compliance" onclick="showSection('compliance')">
+            ✓ Cumplimiento (PCI DSS, GDPR)
         </div>
-
-        <div class="pending-reservations" id="pendingReservations">
-            <h3>⏳ Reservas Pendientes de Confirmar</h3>
-            <div id="pendingList">
-                <p style="color: #ccc; font-style: italic;">No hay reservas pendientes</p>
-            </div>
+        <div class="menu-item" data-section="vulnerabilities" onclick="showSection('vulnerabilities')">
+            🔍 Vulnerabilidades
         </div>
-
-        <div class="numbers-grid" id="numbersGrid">
-            <!-- Los números se generan con JavaScript -->
+        <div class="menu-item" data-section="logs" onclick="showSection('logs')">
+            📝 Análisis de Logs
         </div>
-
-        <div class="date-info">
-            <p>PARA EL 3 DE AGOSTO 2025</p>
+        <div class="menu-item" data-section="rules" onclick="showSection('rules')">
+            ⚙️ Reglas y Decoders
         </div>
-
-        <div class="contact-info">
-            <p><strong>YAPPY:</strong> 69436925</p>
-            <p><strong>BOLETO NO PAGADO ES NULO</strong></p>
+        <div class="menu-item" data-section="reports" onclick="showSection('reports')">
+            📊 Reportes
         </div>
-
-        <div class="management-panel">
-            <h3>Panel de Gestión Manual</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div class="form-group">
-                    <label for="selectedNumber">Número Seleccionado:</label>
-                    <input type="number" id="selectedNumber" min="0" max="99" placeholder="Selecciona un número">
-                </div>
-                <div class="form-group">
-                    <label for="buyerName">Nombre del Comprador:</label>
-                    <input type="text" id="buyerName" placeholder="Ingresa el nombre">
-                </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-top: 15px;">
-                <button class="btn" onclick="sellNumber()">Vender Número</button>
-                <button class="btn" onclick="markAsPaid()">Marcar como Pagado</button>
-                <button class="btn btn-warning" onclick="markAsUnpaid()">Marcar como No Pagado</button>
-                <button class="btn btn-danger" onclick="cancelSale()">Cancelar Venta</button>
-            </div>
-            <button class="btn" style="margin-top: 20px; width: 100%;" onclick="saveAdminChanges()">Guardar Cambios</button>
-        </div>
-
-        <div class="buyers-table">
-            <h3>Lista de Compradores</h3>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Número</th>
-                        <th>Nombre</th>
-                        <th>Estado</th>
-                        <th>Fecha</th>
-                        <th>Origen</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="buyersTableBody">
-                    <!-- Los compradores se muestran aquí -->
-                </tbody>
-            </table>
+        <div class="menu-item" data-section="settings" onclick="showSection('settings')">
+            ⚙️ Configuración
         </div>
     </div>
 
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <button class="menu-btn" onclick="toggleSidebar()">☰ Menú</button>
+            <div class="logo" onclick="location.reload()">AMENAZA <span>ZERO</span></div>
+        </div>
+        <div class="status-indicator">
+            <div class="status-item">
+                <div class="pulse active"></div>
+                <span>Sistema Activo</span>
+            </div>
+            <div class="status-item">
+                <div class="pulse alert"></div>
+                <span id="alertCount">3 Alertas Activas</span>
+            </div>
+            <div class="status-item">
+                <span id="currentTime"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div class="dashboard-section active" id="section-dashboard">
+            <div class="action-bar">
+                <button class="action-btn primary" onclick="startScan()">
+                    🔍 Escanear Sistema
+                </button>
+                <button class="action-btn danger" onclick="blockAllThreats()">
+                    🚫 Bloquear Amenazas
+                </button>
+                <button class="action-btn success" onclick="exportReport()">
+                    💾 Exportar Reporte
+                </button>
+                <button class="action-btn warning" id="pauseMonitoringBtn" onclick="pauseMonitoring()">
+                    ⏸️ Pausar Monitoreo
+                </button>
+                <button class="action-btn primary" onclick="refreshData()">
+                    🔄 Actualizar Datos
+                </button>
+                <button class="action-btn success" onclick="openAgentsModal()">
+                    👥 Gestionar Agentes
+                </button>
+            </div>
+
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card" onclick="showDetails('threats')">
+                    <div class="stat-label">Amenazas Detectadas</div>
+                    <div class="stat-value" style="color: #ef4444;" id="threatCount">247</div>
+                    <div class="stat-change up">↑ 12% última hora</div>
+                </div>
+                <div class="stat-card" onclick="showDetails('blocked')">
+                    <div class="stat-label">Ataques Bloqueados</div>
+                    <div class="stat-value" style="color: #10b981;" id="blockedCount">1,832</div>
+                    <div class="stat-change down">↓ 5% última hora</div>
+                </div>
+                <div class="stat-card" onclick="showDetails('ips')">
+                    <div class="stat-label">IPs Maliciosas</div>
+                    <div class="stat-value" style="color: #f59e0b;" id="maliciousIPs">89</div>
+                    <div class="stat-change up">↑ 23% última hora</div>
+                </div>
+                <div class="stat-card" onclick="showDetails('critical')">
+                    <div class="stat-label">Eventos Críticos</div>
+                    <div class="stat-value" style="color: #ef4444;" id="criticalEvents">15</div>
+                    <div class="stat-change up">↑ 8% última hora</div>
+                </div>
+                <div class="stat-card" onclick="showDetails('agents')">
+                    <div class="stat-label">Agentes Activos</div>
+                    <div class="stat-value" style="color: #60a5fa;" id="activeAgents">247</div>
+                    <div class="stat-change down">→ Estable</div>
+                </div>
+                <div class="stat-card" onclick="showDetails('compliance')">
+                    <div class="stat-label">Cumplimiento</div>
+                    <div class="stat-value" style="color: #10b981;" id="compliance">94%</div>
+                    <div class="stat-change down">↑ 2% esta semana</div>
+                </div>
+            </div>
+
+            <div class="attack-map">
+                <div class="chart-title">
+                    <span>🌍 Mapa de Ataques en Tiempo Real</span>
+                    <div class="chart-actions">
+                        <button class="icon-btn" id="globeToggleBtn" onclick="toggleGlobeAnimation()">⏸️</button>
+                        <button class="icon-btn" onclick="resetMap()">🔄</button>
+                    </div>
+                </div>
+                <div class="globe" id="globe">
+                    <div class="attack-ping" style="top: 30%; left: 40%;"></div>
+                    <div class="attack-ping" style="top: 60%; left: 70%; animation-delay: 0.5s;"></div>
+                    <div class="attack-ping" style="top: 45%; left: 20%; animation-delay: 1s;"></div>
+                    <div class="attack-ping" style="top: 75%; left: 50%; animation-delay: 1.5s;"></div>
+                </div>
+                <p style="color: #94a3b8;">Monitoreando <span style="color: #60a5fa; font-weight: bold;">4 regiones activas</span> con actividad sospechosa</p>
+            </div>
+
+            <div class="threat-list">
+                <div class="chart-title">
+                    <span>🚨 Amenazas en Tiempo Real</span>
+                    <div class="chart-actions">
+                        <button class="icon-btn" onclick="filterThreats('all')">Todas</button>
+                        <button class="icon-btn" onclick="filterThreats('critical')">Críticas</button>
+                        <button class="icon-btn" onclick="clearThreats()">🗑️ Limpiar</button>
+                    </div>
+                </div>
+                <div class="filter-bar">
+                    <input type="text" class="filter-input" placeholder="🔍 Buscar por IP, tipo de ataque..." id="searchInput" oninput="searchThreats()">
+                    <select class="filter-select" id="severityFilter" onchange="filterBySeverity()">
+                        <option value="all">Todas las severidades</option>
+                        <option value="critical">Crítico</option>
+                        <option value="high">Alto</option>
+                        <option value="medium">Medio</option>
+                        <option value="low">Bajo</option>
+                    </select>
+                </div>
+                <div id="threatsList"></div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">
+                        <span>📊 Eventos por Severidad</span>
+                        <div class="chart-actions">
+                            <button class="icon-btn" onclick="downloadChart('severityChart')">💾</button>
+                            <button class="icon-btn" onclick="refreshChart('severityChart')">🔄</button>
+                        </div>
+                    </div>
+                    <canvas id="severityChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">
+                        <span>📈 Tráfico de Red (últimas 24h)</span>
+                        <div class="chart-actions">
+                            <button class="icon-btn" onclick="downloadChart('trafficChart')">💾</button>
+                            <button class="icon-btn" onclick="refreshChart('trafficChart')">🔄</button>
+                        </div>
+                    </div>
+                    <canvas id="trafficChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card" style="margin-bottom: 2rem;">
+                <div class="chart-title">
+                    <span>🎯 Tipos de Ataques Detectados</span>
+                    <div class="chart-actions">
+                        <button class="icon-btn" onclick="downloadChart('attackTypesChart')">💾</button>
+                        <button class="icon-btn" onclick="refreshChart('attackTypesChart')">🔄</button>
+                    </div>
+                </div>
+                <canvas id="attackTypesChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">
+                    <span>📋 Registro de Logs en Tiempo Real</span>
+                    <div class="chart-actions">
+                        <button class="icon-btn" id="logsToggleBtn" onclick="pauseLogs()">⏸️</button>
+                        <button class="icon-btn" onclick="clearLogs()">🗑️</button>
+                        <button class="icon-btn" onclick="exportLogs()">💾</button>
+                    </div>
+                </div>
+                <div class="log-console" id="logConsole"></div>
+            </div>
+        </div>
+
+        <div class="dashboard-section" id="section-agents">
+            <div class="internal-page">
+                <h2>🖥️ Gestión de Agentes</h2>
+                <p style="color: #94a3b8;">Listado y estado de todos los agentes instalados en los endpoints de la red. Utiliza el botón **"Gestionar Agentes"** en el dashboard principal para la vista modal.</p>
+                <p>Aquí se podría integrar un listado completo con opciones de reinicio y desinstalación.</p>
+            </div>
+        </div>
+        <div class="dashboard-section" id="section-security">
+            <div class="internal-page">
+                <h2>🛡️ Eventos de Seguridad</h2>
+                <p style="color: #94a3b8;">Vista detallada y filtrada de todos los eventos de seguridad detectados.</p>
+                <p>Contenido de ejemplo para la sección de Eventos de Seguridad.</p>
+            </div>
+        </div>
+        <div class="dashboard-section" id="section-integrity">
+            <div class="internal-page">
+                <h2>📁 Integridad de Archivos (FIM)</h2>
+                <p style="color: #94a3b8;">Monitoreo de cambios no autorizados en archivos críticos del sistema.</p>
+                <p>Contenido de ejemplo para la sección de Integridad de Archivos.</p>
+            </div>
+        </div>
+        <div class="dashboard-section" id="section-compliance">
+            <div class="internal-page">
+                <h2>✓ Cumplimiento</h2>
+                <p style="color: #94a3b8;">Reportes de cumplimiento para normativas como PCI DSS y GDPR.</p>
+                <p>Contenido de ejemplo para la sección de Cumplimiento.</p>
+            </div>
+        </div>
+        <div class="dashboard-section" id="section-vulnerabilities">
+            <div class="internal-page">
+                <h2>🔍 Vulnerabilidades</h2>
+                <p style="color: #94a3b8;">Resultados del escaneo de vulnerabilidades en los sistemas.</p>
+                <p>Contenido de ejemplo para la sección de Vulnerabilidades.</p>
+            </div>
+        </div>
+        <div class="dashboard-section" id="section-logs">
+            <div class="internal-page">
+                <h2>📝 Análisis de Logs</h2>
+                <p style="color: #94a3b8;">Herramientas avanzadas para la búsqueda y análisis de logs.</p>
+                <p>Contenido de ejemplo para la sección de Análisis de Logs.</p>
+            </div>
+        </div>
+        <div class="dashboard-section" id="section-rules">
+            <div class="internal-page">
+                <h2>⚙️ Reglas y Decoders</h2>
+                <p style="color: #94a3b8;">Gestión de las reglas de detección y decodificadores de logs.</p>
+                <p>Contenido de ejemplo para la sección de Reglas y Decoders.</p>
+            </div>
+        </div>
+        <div class="dashboard-section" id="section-reports">
+            <div class="internal-page">
+                <h2>📊 Reportes Históricos</h2>
+                <p style="color: #94a3b8;">Generación de reportes programados y bajo demanda.</p>
+                <p>Contenido de ejemplo para la sección de Reportes.</p>
+            </div>
+        </div>
+        <div class="dashboard-section" id="section-settings">
+            <div class="internal-page">
+                <h2>⚙️ Configuración del Sistema</h2>
+                <p style="color: #94a3b8;">Ajustes generales del dashboard y del sistema de seguridad.</p>
+                <p>Contenido de ejemplo para la sección de Configuración.</p>
+            </div>
+        </div>
+        </div>
+
+    <button class="scroll-btn" onclick="scrollToTop()">↑</button>
+
     <div class="notification" id="notification"></div>
 
-    <!-- Modal para reservar número (Client View) -->
-    <div id="reserveModal" class="modal" style="display: none;">
+    <div class="modal" id="agentsModal">
         <div class="modal-content">
-            <span class="close" onclick="closeReserveModal()">&times;</span>
-            <h3>Reservar Número</h3>
-            <div class="form-group">
-                <label>Número seleccionado:</label>
-                <input type="text" id="selectedNumberClient" readonly>
+            <div class="modal-header">
+                <div class="modal-title">👥 Gestión de Agentes</div>
+                <button class="modal-close" onclick="closeModal('agentsModal')">✕</button>
             </div>
-            <div class="form-group">
-                <label for="clientName">Tu nombre:</label>
-                <input type="text" id="clientName" placeholder="Ingresa tu nombre">
+            <div class="filter-bar">
+                <input type="text" class="filter-input" placeholder="🔍 Buscar por nombre, IP..." id="agentSearchInput" oninput="searchAgents()">
+                <select class="filter-select" id="agentStatusFilter" onchange="filterAgents()">
+                    <option value="all">Todos los estados</option>
+                    <option value="active">Activo</option>
+                    <option value="disconnected">Desconectado</option>
+                </select>
             </div>
-            <button class="btn" onclick="reserveNumberClient()">Reservar</button>
+            <div class="agent-grid" id="agentsList"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="detailsTitle">Detalles</div>
+                <button class="modal-close" onclick="closeModal('detailsModal')">✕</button>
+            </div>
+            <div id="detailsContent"></div>
         </div>
     </div>
 
     <script>
-        // Data structure for the raffle
-        let rifaData = {
-            numbers: {}, // Stores details for each number (e.g., {0: {status: 'paid', name: 'John Doe', date: '...'}})
-            buyers: [], // List of all buyers for the table
-            laptopImage: null, // Base64 string of the laptop image
-            pendingReservations: [], // Reservations made by clients awaiting admin confirmation
-            autoMode: false, // Flag for automatic reservation confirmation
-            clientUrlId: null // Unique ID for the client-facing URL
+        let monitoringPaused = false;
+        let logsEnabled = true;
+        let globeAnimationPaused = false;
+        let charts = {};
+        let logTimer;
+        let threatTimer;
+        let statTimer;
+
+        // --- Datos de Simulación ---
+        let threatsData = [
+            { title: "SQL Injection Detectado", ip: "185.220.101.47", target: "/api/users", severity: "critical", time: new Date(Date.now() - 300000), blocked: false },
+            { title: "Brute Force SSH", ip: "91.134.15.233", target: "Port 22", severity: "high", time: new Date(Date.now() - 180000), blocked: true },
+            { title: "XSS Intento", ip: "104.24.11.13", target: "/search?q=", severity: "medium", time: new Date(Date.now() - 120000), blocked: true },
+            { title: "Malware - Ransomware.A", ip: "192.168.1.5", target: "AGENTE-WIN-01", severity: "critical", time: new Date(Date.now() - 60000), blocked: false },
+            { title: "Intentos Fallidos de Login", ip: "203.0.113.12", target: "Servidor Web", severity: "low", time: new Date(Date.now() - 10000), blocked: true }
+        ];
+
+        const initialAgents = [
+            { id: 1, name: "AGENTE-WIN-01", ip: "192.168.1.5", os: "Windows 10", status: "active", lastCheck: new Date(Date.now() - 5000) },
+            { id: 2, name: "AGENTE-LNX-03", ip: "10.0.1.10", os: "Ubuntu 20.04", status: "active", lastCheck: new Date(Date.now() - 15000) },
+            { id: 3, name: "AGENTE-DB-02", ip: "172.16.0.8", os: "CentOS 8", status: "disconnected", lastCheck: new Date(Date.now() - 3600000) },
+            { id: 4, name: "AGENTE-FW-01", ip: "10.0.0.1", os: "Firewall OS", status: "active", lastCheck: new Date(Date.now() - 1000) },
+            { id: 5, name: "AGENTE-DEV-05", ip: "192.168.1.12", os: "MacOS", status: "active", lastCheck: new Date(Date.now() - 25000) },
+        ];
+        
+        let agentsData = [...initialAgents];
+
+        const logsData = [
+            { time: new Date(), level: "info", message: "Sistema de monitoreo inicializado." },
+            { time: new Date(Date.now() - 5000), level: "warning", message: "Uso de CPU del Servidor Web al 95%." },
+            { time: new Date(Date.now() - 10000), level: "error", message: "Fallo de conexión: IP 91.134.15.233 bloqueada." }
+        ];
+        
+        // Colores y utilidades para Chart.js
+        const chartColors = {
+            critical: 'rgb(239, 68, 68)',
+            high: 'rgb(249, 115, 22)',
+            medium: 'rgb(234, 179, 8)',
+            low: 'rgb(16, 185, 129)',
+            info: 'rgb(96, 165, 250)',
+            secondary: 'rgb(100, 116, 139)'
         };
 
-        let currentEditingId = null; // Used for manual management to pre-fill selected number
+        // --- Funciones de Utilidad ---
 
-        // --- Utility Functions ---
-
-        /**
-         * Generates a unique ID for the client URL and updates the input field.
-         * Stores the ID in localStorage for persistence.
-         */
-        function generateClientUrl() {
-            const urlId = Math.random().toString(36).substring(2, 11); // Generates a random alphanumeric string
-            rifaData.clientUrlId = urlId;
-            const clientUrl = `${window.location.origin}${window.location.pathname}?client=${urlId}`;
-            document.getElementById('clientUrl').value = clientUrl;
-
-            saveData(); // Save the new URL ID
-            showNotification('URL generada exitosamente', 'success');
-        }
-
-        /**
-         * Copies the client URL to the clipboard.
-         */
-        function copyUrl() {
-            const urlInput = document.getElementById('clientUrl');
-            urlInput.select();
-            // Fallback for older browsers or environments where navigator.clipboard might not work
-            try {
-                document.execCommand('copy');
-                showNotification('URL copiada al portapapeles', 'success');
-            } catch (err) {
-                showNotification('Error al copiar la URL. Por favor, cópiala manualmente.', 'error');
-                console.error('Failed to copy URL:', err);
-            }
-        }
-
-        /**
-         * Toggles the automatic reservation confirmation mode.
-         * If activated, it processes any pending reservations immediately.
-         */
-        function toggleAutoMode() {
-            rifaData.autoMode = !rifaData.autoMode;
-            const toggle = document.getElementById('autoModeToggle');
-            const status = document.getElementById('autoModeStatus');
-
-            if (rifaData.autoMode) {
-                toggle.classList.add('active');
-                status.textContent = 'Activado';
-                showNotification('Modo automático activado', 'success');
-                processPendingReservations(); // Process pending immediately
-            } else {
-                toggle.classList.remove('active');
-                status.textContent = 'Desactivado';
-                showNotification('Modo automático desactivado', 'success');
-            }
-            saveData(); // Save auto mode state
-        }
-
-        /**
-         * Processes all pending reservations, marking them as 'paid' and moving them to buyers list.
-         * Only runs if autoMode is active.
-         */
-        function processPendingReservations() {
-            if (!rifaData.autoMode) return;
-
-            // Create a copy to iterate while modifying the original
-            const reservationsToProcess = [...rifaData.pendingReservations];
-
-            reservationsToProcess.forEach(reservation => {
-                // Check if the number is still pending (it might have been manually cancelled)
-                if (rifaData.numbers[reservation.number] && rifaData.numbers[reservation.number].status === 'pending') {
-                    confirmReservation(reservation.number, reservation.name, reservation.timestamp);
-                }
-            });
-
-            // Clear all pending reservations as they are now processed
-            rifaData.pendingReservations = [];
-            updatePendingReservations();
-            saveData();
-        }
-
-        /**
-         * Handles image file upload, displays it, and stores it in rifaData and localStorage.
-         * @param {Event} event - The file input change event.
-         */
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            if (!file.type.startsWith('image/')) {
-                showNotification('Por favor selecciona un archivo de imagen válido (JPG, PNG, GIF, etc.)', 'error');
-                return;
-            }
-
-            if (file.size > 5 * 1024 * 1024) { // 5MB limit
-                showNotification('La imagen es demasiado grande. Por favor selecciona una imagen menor a 5MB', 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.getElementById('laptopImage');
-                const uploadText = document.getElementById('uploadText');
-                const imageControls = document.getElementById('imageControls');
-
-                img.src = e.target.result;
-                img.style.display = 'block';
-                uploadText.style.display = 'none';
-                imageControls.style.display = 'flex';
-
-                rifaData.laptopImage = e.target.result;
-                saveData(); // Save image data
-                showNotification('Imagen subida exitosamente', 'success');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        /**
-         * Triggers the file input for changing the image.
-         */
-        function changeImage() {
-            document.getElementById('imageUpload').click();
-        }
-
-        /**
-         * Removes the currently displayed laptop image.
-         */
-        function removeImage() {
-            // Using a custom modal for confirmation instead of alert/confirm
-            showCustomModal('¿Estás seguro de que quieres quitar la imagen?', () => {
-                const img = document.getElementById('laptopImage');
-                const uploadText = document.getElementById('uploadText');
-                const imageControls = document.getElementById('imageControls');
-                const fileInput = document.getElementById('imageUpload');
-
-                img.style.display = 'none';
-                img.src = '';
-                uploadText.style.display = 'block';
-                imageControls.style.display = 'none';
-                fileInput.value = ''; // Clear file input value
-
-                rifaData.laptopImage = null;
-                saveData(); // Remove image data
-                showNotification('Imagen eliminada', 'success');
-            });
-        }
-
-        /**
-         * Displays a notification message.
-         * @param {string} message - The message to display.
-         * @param {string} type - 'success' or 'error' for styling.
-         */
         function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type} show`;
-
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.className = `notification active ${type}`;
             setTimeout(() => {
-                notification.classList.remove('show');
+                notif.classList.remove('active');
             }, 3000);
         }
 
-        /**
-         * Initializes the application, loading saved data and setting up views.
-         */
-        function initializeApp() {
-            loadSavedData(); // Load data first
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const clientId = urlParams.get('client');
-
-            if (clientId) {
-                showClientView(clientId);
-            } else {
-                // Admin view setup
-                document.body.classList.remove('client-mode'); // Ensure admin mode styles are active
-                document.getElementById('reserveModal').style.display = 'none'; // Hide client modal
-                generateNumbersGrid();
-                updateStats();
-                updateBuyersTable();
-                updatePendingReservations();
-
-                if (!rifaData.clientUrlId) {
-                    generateClientUrl();
-                } else {
-                    const clientUrl = `${window.location.origin}${window.location.pathname}?client=${rifaData.clientUrlId}`;
-                    document.getElementById('clientUrl').value = clientUrl;
-                }
-                // Simulate client data for admin view (for testing/demo purposes)
-                // simulateClientData();
-            }
+        function formatTime(date) {
+            return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
 
-        /**
-         * Loads raffle data from localStorage.
-         */
-        function loadSavedData() {
-            const savedData = localStorage.getItem('rifaData');
-            if (savedData) {
-                try {
-                    const parsed = JSON.parse(savedData);
-                    // Merge saved data, ensuring default values are kept if not present in savedData
-                    rifaData = { ...rifaData, ...parsed };
-                    // Ensure numbers object is initialized if it was empty
-                    if (!rifaData.numbers) rifaData.numbers = {};
-                    if (!rifaData.buyers) rifaData.buyers = [];
-                    if (!rifaData.pendingReservations) rifaData.pendingReservations = [];
-                } catch (e) {
-                    console.error("Error parsing saved data:", e);
-                    // Optionally clear corrupted data
-                    localStorage.removeItem('rifaData');
-                }
-            }
+        // --- Funciones de Botones de Acción Global ---
 
-            const savedImage = localStorage.getItem('rifaLaptopImage');
-            if (savedImage) {
-                rifaData.laptopImage = savedImage;
-                const img = document.getElementById('laptopImage');
-                const uploadText = document.getElementById('uploadText');
-                const imageControls = document.getElementById('imageControls');
-
-                if (img && uploadText && imageControls) { // Check if elements exist (they won't in client view initially)
-                    img.src = savedImage;
-                    img.style.display = 'block';
-                    uploadText.style.display = 'none';
-                    imageControls.style.display = 'flex';
-                }
-            }
-
-            const savedUrl = localStorage.getItem('rifaClientUrl');
-            if (savedUrl) {
-                rifaData.clientUrlId = savedUrl;
-            }
-
-            const savedAutoMode = localStorage.getItem('rifaAutoMode');
-            if (savedAutoMode !== null) { // Check for null to distinguish from 'false'
-                rifaData.autoMode = savedAutoMode === 'true';
-                const toggle = document.getElementById('autoModeToggle');
-                const status = document.getElementById('autoModeStatus');
-
-                if (toggle && status) { // Check if elements exist
-                    if (rifaData.autoMode) {
-                        toggle.classList.add('active');
-                        status.textContent = 'Activado';
-                    } else {
-                        toggle.classList.remove('active');
-                        status.textContent = 'Desactivado';
-                    }
-                }
-            }
-        }
-
-        /**
-         * Saves current raffle data to localStorage.
-         */
-        function saveData() {
-            const dataToSave = {
-                numbers: rifaData.numbers,
-                buyers: rifaData.buyers,
-                pendingReservations: rifaData.pendingReservations,
-                autoMode: rifaData.autoMode,
-                clientUrlId: rifaData.clientUrlId
-            };
-            localStorage.setItem('rifaData', JSON.stringify(dataToSave));
-            localStorage.setItem('rifaLaptopImage', rifaData.laptopImage || ''); // Store image separately for easier loading
-            localStorage.setItem('rifaAutoMode', rifaData.autoMode.toString());
-            localStorage.setItem('rifaClientUrl', rifaData.clientUrlId || '');
-        }
-
-        // --- Admin View Functions ---
-
-        /**
-         * Generates the grid of raffle numbers (0-99).
-         * Each number box is clickable to select for manual management.
-         */
-        function generateNumbersGrid() {
-            const numbersGrid = document.getElementById('numbersGrid');
-            numbersGrid.innerHTML = ''; // Clear existing grid
-
-            for (let i = 0; i < 100; i++) {
-                const numberBox = document.createElement('div');
-                numberBox.classList.add('number-box');
-                numberBox.dataset.number = i; // Store the number as a data attribute
-
-                const numberText = document.createElement('span');
-                numberText.classList.add('number-text');
-                numberText.textContent = String(i).padStart(2, '0'); // Format as 00, 01, ..., 99
-                numberBox.appendChild(numberText);
-
-                // Check status and apply appropriate class
-                const numberInfo = rifaData.numbers[i];
-                if (numberInfo) {
-                    numberBox.classList.add(numberInfo.status);
-                    if (numberInfo.name) {
-                        const buyerNameSpan = document.createElement('span');
-                        buyerNameSpan.classList.add('buyer-name');
-                        buyerNameSpan.textContent = numberInfo.name;
-                        numberBox.appendChild(buyerNameSpan);
-                    }
-                }
-
-                // Add click listener for manual selection
-                numberBox.addEventListener('click', () => selectNumberForManagement(i));
-                numbersGrid.appendChild(numberBox);
-            }
-        }
-
-        /**
-         * Updates the statistics displayed on the admin page.
-         */
-        function updateStats() {
-            let totalSold = 0;
-            let totalPaid = 0;
-            let totalRevenue = 0;
-            let availableNumbers = 0;
-
-            for (let i = 0; i < 100; i++) {
-                const numberInfo = rifaData.numbers[i];
-                if (numberInfo) {
-                    totalSold++;
-                    if (numberInfo.status === 'paid') {
-                        totalPaid++;
-                        totalRevenue += 2; // Assuming each ticket is $2
-                    }
-                } else {
-                    availableNumbers++;
-                }
-            }
-
-            document.getElementById('totalSold').textContent = totalSold;
-            document.getElementById('totalPaid').textContent = totalPaid;
-            document.getElementById('totalRevenue').textContent = `$${totalRevenue}`;
-            document.getElementById('availableNumbers').textContent = availableNumbers;
-
-            // Update client view stats if it's active
-            if (document.getElementById('clientTotalSold')) {
-                document.getElementById('clientTotalSold').textContent = totalSold;
-                document.getElementById('clientAvailableNumbers').textContent = availableNumbers;
-            }
-        }
-
-        /**
-         * Updates the table of buyers on the admin page.
-         */
-        function updateBuyersTable() {
-            const buyersTableBody = document.getElementById('buyersTableBody');
-            if (!buyersTableBody) return; // Exit if not in admin view
-
-            buyersTableBody.innerHTML = ''; // Clear existing rows
-
-            // Sort buyers by number for consistent display
-            const sortedBuyers = [...rifaData.buyers].sort((a, b) => a.number - b.number);
-
-            if (sortedBuyers.length === 0) {
-                const noBuyersRow = document.createElement('tr');
-                noBuyersRow.innerHTML = `<td colspan="6" style="text-align: center; color: #ccc; font-style: italic;">No hay compradores registrados aún.</td>`;
-                buyersTableBody.appendChild(noBuyersRow);
+        function startScan() {
+            if (monitoringPaused) {
+                showNotification('El escaneo no puede iniciar: El monitoreo está pausado.', 'warning');
                 return;
             }
-
-            sortedBuyers.forEach(buyer => {
-                const row = buyersTableBody.insertRow();
-                row.innerHTML = `
-                    <td>${String(buyer.number).padStart(2, '0')}</td>
-                    <td>${buyer.name}</td>
-                    <td class="${buyer.status === 'paid' ? 'status-paid' : 'status-pending'}">${buyer.status === 'paid' ? 'Pagado' : 'Pendiente'}</td>
-                    <td>${new Date(buyer.date).toLocaleString()}</td>
-                    <td>${buyer.origin || 'Admin'}</td>
-                    <td>
-                        <button class="btn btn-info" onclick="editBuyer(${buyer.number})">Editar</button>
-                        <button class="btn btn-danger" onclick="removeBuyer(${buyer.number})">Eliminar</button>
-                    </td>
-                `;
-            });
-        }
-
-        /**
-         * Updates the list of pending reservations on the admin page.
-         */
-        function updatePendingReservations() {
-            const pendingList = document.getElementById('pendingList');
-            if (!pendingList) return; // Exit if not in admin view
-
-            pendingList.innerHTML = ''; // Clear existing list
-
-            if (rifaData.pendingReservations.length === 0) {
-                pendingList.innerHTML = '<p style="color: #ccc; font-style: italic;">No hay reservas pendientes</p>';
-                return;
-            }
-
-            rifaData.pendingReservations.forEach(reservation => {
-                const reservationItem = document.createElement('div');
-                reservationItem.classList.add('reservation-item');
-                reservationItem.innerHTML = `
-                    <div class="reservation-info">
-                        Número: <strong>${String(reservation.number).padStart(2, '0')}</strong> -
-                        Reservado por: <strong>${reservation.name}</strong> (${new Date(reservation.timestamp).toLocaleString()})
-                    </div>
-                    <div class="reservation-actions">
-                        <button class="btn" onclick="confirmReservation(${reservation.number}, '${reservation.name}', ${reservation.timestamp})">Confirmar</button>
-                        <button class="btn btn-danger" onclick="rejectReservation(${reservation.number}, ${reservation.timestamp})">Rechazar</button>
-                    </div>
-                `;
-                pendingList.appendChild(reservationItem);
-            });
-        }
-
-        /**
-         * Selects a number in the manual management panel.
-         * @param {number} number - The number to select.
-         */
-        function selectNumberForManagement(number) {
-            document.getElementById('selectedNumber').value = number;
-            currentEditingId = number; // Set the current editing ID
-
-            const numberInfo = rifaData.numbers[number];
-            if (numberInfo) {
-                document.getElementById('buyerName').value = numberInfo.name || '';
-                showNotification(`Número ${String(number).padStart(2, '0')} seleccionado. Estado: ${numberInfo.status === 'paid' ? 'Pagado' : (numberInfo.status === 'sold' ? 'Vendido' : 'Pendiente')}`, 'info');
-            } else {
-                document.getElementById('buyerName').value = '';
-                showNotification(`Número ${String(number).padStart(2, '0')} seleccionado. Disponible.`, 'info');
-            }
-        }
-
-        /**
-         * Handles selling a number manually.
-         */
-        function sellNumber() {
-            const number = parseInt(document.getElementById('selectedNumber').value);
-            const name = document.getElementById('buyerName').value.trim();
-
-            if (isNaN(number) || number < 0 || number > 99) {
-                showNotification('Por favor, selecciona un número válido (0-99).', 'error');
-                return;
-            }
-            if (!name) {
-                showNotification('Por favor, ingresa el nombre del comprador.', 'error');
-                return;
-            }
-
-            if (rifaData.numbers[number] && rifaData.numbers[number].status !== 'available') {
-                showNotification(`El número ${String(number).padStart(2, '0')} ya está ${rifaData.numbers[number].status === 'paid' ? 'pagado' : 'vendido/pendiente'}.`, 'error');
-                return;
-            }
-
-            // Add to numbers and buyers
-            rifaData.numbers[number] = {
-                status: 'sold', // Mark as sold, not yet paid
-                name: name,
-                date: new Date().toISOString(),
-                origin: 'Admin'
-            };
-            rifaData.buyers.push({
-                number: number,
-                name: name,
-                status: 'sold',
-                date: new Date().toISOString(),
-                origin: 'Admin'
-            });
-
-            saveData();
-            generateNumbersGrid();
-            updateStats();
-            updateBuyersTable();
-            showNotification(`Número ${String(number).padStart(2, '0')} vendido a ${name}.`, 'success');
-            document.getElementById('buyerName').value = ''; // Clear name field
-        }
-
-        /**
-         * Marks a sold/pending number as paid.
-         */
-        function markAsPaid() {
-            const number = parseInt(document.getElementById('selectedNumber').value);
-
-            if (isNaN(number) || number < 0 || number > 99) {
-                showNotification('Por favor, selecciona un número válido (0-99).', 'error');
-                return;
-            }
-
-            const numberInfo = rifaData.numbers[number];
-            if (!numberInfo) {
-                showNotification(`El número ${String(number).padStart(2, '0')} no está vendido.`, 'error');
-                return;
-            }
-            if (numberInfo.status === 'paid') {
-                showNotification(`El número ${String(number).padStart(2, '0')} ya está pagado.`, 'info');
-                return;
-            }
-
-            // Update status in numbers
-            rifaData.numbers[number].status = 'paid';
-
-            // Update status in buyers list
-            const buyerIndex = rifaData.buyers.findIndex(b => b.number === number);
-            if (buyerIndex !== -1) {
-                rifaData.buyers[buyerIndex].status = 'paid';
-            } else {
-                // This case should ideally not happen if data is consistent
-                console.warn(`Buyer for number ${number} not found in buyers list.`);
-                rifaData.buyers.push({
-                    number: number,
-                    name: numberInfo.name || 'Desconocido',
-                    status: 'paid',
-                    date: new Date().toISOString(),
-                    origin: numberInfo.origin || 'Admin'
-                });
-            }
-
-            saveData();
-            generateNumbersGrid();
-            updateStats();
-            updateBuyersTable();
-            updatePendingReservations(); // In case it was pending
-            showNotification(`Número ${String(number).padStart(2, '0')} marcado como pagado.`, 'success');
-            document.getElementById('buyerName').value = ''; // Clear name field
-        }
-
-        /**
-         * Marks a sold or pending number as unpaid, reverting it to available.
-         */
-        function markAsUnpaid() {
-            const number = parseInt(document.getElementById('selectedNumber').value);
-
-            if (isNaN(number) || number < 0 || number > 99) {
-                showNotification('Por favor, selecciona un número válido (0-99).', 'error');
-                return;
-            }
-
-            const numberInfo = rifaData.numbers[number];
-            if (!numberInfo) {
-                showNotification(`El número ${String(number).padStart(2, '0')} no está vendido ni reservado.`, 'info');
-                return;
-            }
-
-            if (numberInfo.status === 'paid') {
-                showNotification(`El número ${String(number).padStart(2, '0')} ya está pagado. Usa "Cancelar Venta" si deseas liberarlo.`, 'error');
-                return;
-            }
-
-            showCustomModal(`¿Estás seguro de que quieres marcar el número ${String(number).padStart(2, '0')} como "No Pagado"? Esto lo liberará.`, () => {
-                // Remove from numbers
-                delete rifaData.numbers[number];
-
-                // Remove from buyers list (if it was there as sold/pending)
-                rifaData.buyers = rifaData.buyers.filter(b => b.number !== number);
-
-                // Remove from pending reservations (if it was there)
-                rifaData.pendingReservations = rifaData.pendingReservations.filter(r => r.number !== number);
-
-                saveData();
-                generateNumbersGrid();
-                updateStats();
-                updateBuyersTable();
-                updatePendingReservations();
-                showNotification(`Número ${String(number).padStart(2, '0')} marcado como "No Pagado" y liberado.`, 'success');
-                document.getElementById('buyerName').value = ''; // Clear name field
-            });
-        }
-
-        /**
-         * Cancels a sale/reservation for a number.
-         */
-        function cancelSale() {
-            const number = parseInt(document.getElementById('selectedNumber').value);
-
-            if (isNaN(number) || number < 0 || number > 99) {
-                showNotification('Por favor, selecciona un número válido (0-99).', 'error');
-                return;
-            }
-
-            if (!rifaData.numbers[number]) {
-                showNotification(`El número ${String(number).padStart(2, '0')} no está vendido ni reservado.`, 'info');
-                return;
-            }
-
-            showCustomModal(`¿Estás seguro de que quieres cancelar la venta/reserva del número ${String(number).padStart(2, '0')}?`, () => {
-                // Remove from numbers
-                delete rifaData.numbers[number];
-
-                // Remove from buyers list
-                rifaData.buyers = rifaData.buyers.filter(b => b.number !== number);
-
-                // Remove from pending reservations if it was there
-                rifaData.pendingReservations = rifaData.pendingReservations.filter(r => r.number !== number);
-
-                saveData();
-                generateNumbersGrid();
-                updateStats();
-                updateBuyersTable();
-                updatePendingReservations();
-                showNotification(`Venta/reserva del número ${String(number).padStart(2, '0')} cancelada.`, 'success');
-                document.getElementById('buyerName').value = ''; // Clear name field
-            });
-        }
-
-        /**
-         * Edits an existing buyer's information.
-         * @param {number} number - The number associated with the buyer to edit.
-         */
-        function editBuyer(number) {
-            selectNumberForManagement(number); // Pre-fill the number and name
-            showNotification(`Editando número ${String(number).padStart(2, '0')}. Cambia el nombre o estado y usa los botones de acción.`, 'info');
-        }
-
-        /**
-         * Removes a buyer from the list and frees up their number.
-         * @param {number} number - The number associated with the buyer to remove.
-         */
-        function removeBuyer(number) {
-            showCustomModal(`¿Estás seguro de que quieres eliminar al comprador del número ${String(number).padStart(2, '0')}? Esto también liberará el número.`, () => {
-                // Remove from numbers
-                delete rifaData.numbers[number];
-
-                // Remove from buyers list
-                rifaData.buyers = rifaData.buyers.filter(b => b.number !== number);
-
-                // Remove from pending reservations if it was there
-                rifaData.pendingReservations = rifaData.pendingReservations.filter(r => r.number !== number);
-
-                saveData();
-                generateNumbersGrid();
-                updateStats();
-                updateBuyersTable();
-                updatePendingReservations();
-                showNotification(`Comprador del número ${String(number).padStart(2, '0')} eliminado y número liberado.`, 'success');
-                document.getElementById('buyerName').value = ''; // Clear name field
-            });
-        }
-
-        /**
-         * Confirms a pending reservation, marking the number as 'paid' and moving it to the buyers list.
-         * @param {number} number - The number to confirm.
-         * @param {string} name - The name of the client who reserved.
-         * @param {number} timestamp - The timestamp of the reservation.
-         */
-        function confirmReservation(number, name, timestamp) {
-            // Check if the number is still pending
-            const reservationIndex = rifaData.pendingReservations.findIndex(r => r.number === number && r.timestamp === timestamp);
-            if (reservationIndex === -1 && rifaData.numbers[number]?.status !== 'pending') {
-                showNotification(`La reserva para el número ${String(number).padStart(2, '0')} ya no está pendiente o fue procesada.`, 'error');
-                return;
-            }
-
-            // If it was pending, remove it from pending list
-            if (reservationIndex !== -1) {
-                rifaData.pendingReservations.splice(reservationIndex, 1);
-            }
-
-            // Update numbers data (or create if it was only pending)
-            rifaData.numbers[number] = {
-                status: 'paid', // Directly mark as paid upon confirmation
-                name: name,
-                date: new Date().toISOString(),
-                origin: 'Cliente'
-            };
-
-            // Add/Update in buyers list
-            const buyerIndex = rifaData.buyers.findIndex(b => b.number === number);
-            if (buyerIndex !== -1) {
-                rifaData.buyers[buyerIndex] = {
-                    number: number,
-                    name: name,
-                    status: 'paid',
-                    date: new Date().toISOString(),
-                    origin: 'Cliente'
-                };
-            } else {
-                rifaData.buyers.push({
-                    number: number,
-                    name: name,
-                    status: 'paid',
-                    date: new Date().toISOString(),
-                    origin: 'Cliente'
-                });
-            }
-
-            saveData();
-            generateNumbersGrid();
-            updateStats();
-            updateBuyersTable();
-            updatePendingReservations();
-            showNotification(`Reserva del número ${String(number).padStart(2, '0')} por ${name} confirmada y pagada.`, 'success');
-        }
-
-        /**
-         * Rejects a pending reservation, freeing up the number.
-         * @param {number} number - The number to reject.
-         * @param {number} timestamp - The timestamp of the reservation.
-         */
-        function rejectReservation(number, timestamp) {
-            showCustomModal(`¿Estás seguro de que quieres rechazar la reserva del número ${String(number).padStart(2, '0')}?`, () => {
-                const reservationIndex = rifaData.pendingReservations.findIndex(r => r.number === number && r.timestamp === timestamp);
-                if (reservationIndex !== -1) {
-                    rifaData.pendingReservations.splice(reservationIndex, 1);
-                }
-
-                // Also remove from numbers if it was only pending
-                if (rifaData.numbers[number] && rifaData.numbers[number].status === 'pending') {
-                    delete rifaData.numbers[number];
-                }
-
-                // Remove from buyers list if it was added there as pending
-                rifaData.buyers = rifaData.buyers.filter(b => !(b.number === number && b.status === 'pending'));
-
-                saveData();
-                generateNumbersGrid();
-                updateStats();
-                updateBuyersTable();
-                updatePendingReservations();
-                showNotification(`Reserva del número ${String(number).padStart(2, '0')} rechazada. Número disponible.`, 'info');
-            });
-        }
-
-        /**
-         * Function to manually save all changes from the admin panel.
-         */
-        function saveAdminChanges() {
-            saveData();
-            showNotification('Cambios guardados exitosamente', 'success');
-        }
-
-
-        // --- Client View Functions ---
-
-        /**
-         * Displays the client-facing view of the raffle.
-         * @param {string} clientId - The client ID from the URL.
-         */
-        function showClientView(clientId) {
-            // Validate client ID
-            if (clientId !== rifaData.clientUrlId && rifaData.clientUrlId) {
-                document.body.innerHTML = `
-                    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; text-align: center; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; font-family: 'Inter', sans-serif;">
-                        <div>
-                            <h1 style="color: white; font-size: 3em; margin-bottom: 20px; text-shadow: 2px 2px 5px rgba(0,0,0,0.5);">❌ URL Inválida</h1>
-                            <p style="font-size: 1.5em; margin-bottom: 10px;">Esta URL no es válida o ha expirado.</p>
-                            <p style="font-size: 1.1em; color: #f0f0f0;">Por favor, contacta al administrador para obtener la URL correcta.</p>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-
-            // Hide admin-specific elements and show client-specific ones
-            document.body.innerHTML = `
-                <div class="container">
-                    <div class="header">
-                        <div class="client-badge">👤 VISTA CLIENTE</div>
-                        <h1>GRAN RIFA DE</h1>
-                    </div>
-
-                    <div class="laptop-info">
-                        <div class="laptop-details">
-                            <h2>LAPTOP HP G4</h2>
-                            <p>MUY POCO USO RANGO B</p>
-                        </div>
-                        <div class="laptop-image">
-                            ${rifaData.laptopImage ? `<img src="${rifaData.laptopImage}" alt="Laptop HP G4">` : '<div class="upload-text">HP Pavilion g4</div>'}
-                        </div>
-                        <div class="price">
-                            VALOR<br>2$
-                        </div>
-                    </div>
-
-                    <div class="stats">
-                        <div class="stat-card">
-                            <div class="stat-number" id="clientTotalSold">0</div>
-                            <div class="stat-label">Números Vendidos</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="clientAvailableNumbers">100</div>
-                            <div class="stat-label">Números Disponibles</div>
-                        </div>
-                    </div>
-
-                    <div class="numbers-grid" id="clientNumbersGrid">
-                        <!-- Numbers will be generated here -->
-                    </div>
-
-                    <div class="date-info">
-                        <p>PARA EL 3 DE AGOSTO 2025</p>
-                    </div>
-
-                    <div class="contact-info">
-                        <p><strong>YAPPY:</strong> 69436925</p>
-                        <p><strong>BOLETO NO PAGADO ES NULO</strong></p>
-                    </div>
-                </div>
-
-                <div class="notification" id="clientNotification"></div>
-
-                <!-- Modal for reserving number -->
-                <div id="reserveModal" class="modal">
-                    <div class="modal-content">
-                        <span class="close" onclick="closeReserveModal()">&times;</span>
-                        <h3>Reservar Número</h3>
-                        <div class="form-group">
-                            <label>Número seleccionado:</label>
-                            <input type="text" id="selectedNumberClient" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label for="clientName">Tu nombre:</label>
-                            <input type="text" id="clientName" placeholder="Ingresa tu nombre" required>
-                        </div>
-                        <button class="btn" onclick="reserveNumberClient()">Reservar</button>
-                    </div>
-                </div>
-            `;
-
-            // Apply client-specific body class for potential styling differences
-            document.body.classList.add('client-mode');
-
-            // Re-render numbers grid for client view
-            generateClientNumbersGrid();
-            updateStats(); // Update client stats as well
-        }
-
-        /**
-         * Generates the numbers grid for the client view.
-         * Only available numbers are clickable.
-         */
-        function generateClientNumbersGrid() {
-            const clientNumbersGrid = document.getElementById('clientNumbersGrid');
-            clientNumbersGrid.innerHTML = '';
-
-            for (let i = 0; i < 100; i++) {
-                const numberBox = document.createElement('div');
-                numberBox.classList.add('number-box');
-                numberBox.dataset.number = i;
-
-                const numberText = document.createElement('span');
-                numberText.classList.add('number-text');
-                numberText.textContent = String(i).padStart(2, '0');
-                numberBox.appendChild(numberText);
-
-                const numberInfo = rifaData.numbers[i];
-                if (numberInfo) {
-                    numberBox.classList.add(numberInfo.status);
-                    if (numberInfo.name) {
-                        const buyerNameSpan = document.createElement('span');
-                        buyerNameSpan.classList.add('buyer-name');
-                        buyerNameSpan.textContent = numberInfo.name;
-                        numberBox.appendChild(buyerNameSpan);
-                    }
-                    numberBox.style.cursor = 'not-allowed'; // Not clickable if sold/paid/pending
-                } else {
-                    // Only available numbers are clickable
-                    numberBox.addEventListener('click', () => openReserveModal(i));
-                }
-                clientNumbersGrid.appendChild(numberBox);
-            }
-        }
-
-        /**
-         * Opens the reservation modal for clients.
-         * @param {number} number - The number selected by the client.
-         */
-        function openReserveModal(number) {
-            document.getElementById('selectedNumberClient').value = String(number).padStart(2, '0');
-            document.getElementById('reserveModal').style.display = 'flex'; // Show modal
-        }
-
-        /**
-         * Closes the reservation modal.
-         */
-        function closeReserveModal() {
-            document.getElementById('reserveModal').style.display = 'none';
-            document.getElementById('clientName').value = ''; // Clear name input
-        }
-
-        /**
-         * Handles client's reservation request.
-         */
-        function reserveNumberClient() {
-            const number = parseInt(document.getElementById('selectedNumberClient').value);
-            const clientName = document.getElementById('clientName').value.trim();
-
-            if (!clientName) {
-                showClientNotification('Por favor, ingresa tu nombre para reservar el número.', 'error');
-                return;
-            }
-
-            if (rifaData.numbers[number]) {
-                showClientNotification(`El número ${String(number).padStart(2, '0')} ya no está disponible. Por favor, elige otro.`, 'error');
-                closeReserveModal();
-                generateClientNumbersGrid(); // Re-render to show updated status
-                return;
-            }
-
-            const timestamp = Date.now(); // Unique timestamp for this reservation
-
-            if (rifaData.autoMode) {
-                // If auto mode is on, confirm immediately
-                rifaData.numbers[number] = {
-                    status: 'paid', // Auto-confirm as paid
-                    name: clientName,
-                    date: new Date().toISOString(),
-                    origin: 'Cliente'
-                };
-                rifaData.buyers.push({
-                    number: number,
-                    name: clientName,
-                    status: 'paid',
-                    date: new Date().toISOString(),
-                    origin: 'Cliente'
-                });
-                showClientNotification(`¡Felicidades! Has reservado y pagado el número ${String(number).padStart(2, '0')}.`, 'success');
-            } else {
-                // If auto mode is off, add to pending reservations
-                rifaData.numbers[number] = {
-                    status: 'pending', // Mark as pending
-                    name: clientName,
-                    date: new Date().toISOString(),
-                    origin: 'Cliente'
-                };
-                rifaData.pendingReservations.push({
-                    number: number,
-                    name: clientName,
-                    timestamp: timestamp // Add timestamp for unique identification of reservation
-                });
-                // Also add to buyers list as pending so it shows up in admin table
-                rifaData.buyers.push({
-                    number: number,
-                    name: clientName,
-                    status: 'pending',
-                    date: new Date().toISOString(),
-                    origin: 'Cliente'
-                });
-                showClientNotification(`¡Número ${String(number).padStart(2, '0')} reservado! Espera la confirmación del administrador.`, 'info');
-            }
-
-            saveData();
-            closeReserveModal();
-            generateClientNumbersGrid();
-            updateStats(); // Update client stats after reservation
-        }
-
-        /**
-         * Displays a notification message specifically for the client view.
-         * @param {string} message - The message to display.
-         * @param {string} type - 'success' or 'error' for styling.
-         */
-        function showClientNotification(message, type = 'success') {
-            const notification = document.getElementById('clientNotification');
-            notification.textContent = message;
-            notification.className = `notification ${type} show`;
-
+            showNotification('🔍 Escaneo de seguridad iniciado en todos los agentes.', 'primary');
+            // Simulación de una amenaza crítica después del escaneo
             setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        // --- Custom Modal for Confirmation (replaces alert/confirm) ---
-        let customModalCallback = null;
-
-        function showCustomModal(message, callback) {
-            const modalHtml = `
-                <div id="customConfirmModal" class="modal" style="display: flex;">
-                    <div class="modal-content">
-                        <span class="close" onclick="closeCustomModal()">&times;</span>
-                        <h3 style="color: #f1c40f;">Confirmación</h3>
-                        <p style="text-align: center; margin-bottom: 25px; font-size: 1.1em;">${message}</p>
-                        <div style="display: flex; justify-content: center; gap: 15px;">
-                            <button class="btn btn-danger" onclick="executeCustomModalCallback(false)">Cancelar</button>
-                            <button class="btn" onclick="executeCustomModalCallback(true)">Confirmar</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-            customModalCallback = callback;
-        }
-
-        function closeCustomModal() {
-            const modal = document.getElementById('customConfirmModal');
-            if (modal) {
-                modal.remove();
-            }
-            customModalCallback = null;
-        }
-
-        function executeCustomModalCallback(confirmed) {
-            if (customModalCallback) {
-                if (confirmed) {
-                    customModalCallback();
-                }
-            }
-            closeCustomModal();
-        }
-
-        // --- Simulation for Client Data (Admin View Only) ---
-        /**
-         * Simulates client reservations for testing purposes in admin view.
-         * This function would be replaced by actual backend communication in a real app.
-         */
-        function simulateClientData() {
-            // Simulate a client reserving number 5 and 12
-            setTimeout(() => {
-                if (!rifaData.numbers[5]) {
-                    rifaData.pendingReservations.push({ number: 5, name: 'Ana Garcia', timestamp: Date.now() - 50000 });
-                    rifaData.numbers[5] = { status: 'pending', name: 'Ana Garcia', date: new Date(Date.now() - 50000).toISOString(), origin: 'Cliente' };
-                    rifaData.buyers.push({ number: 5, name: 'Ana Garcia', status: 'pending', date: new Date(Date.now() - 50000).toISOString(), origin: 'Cliente' });
-                    saveData();
-                    updatePendingReservations();
-                    generateNumbersGrid();
-                    updateStats();
-                    // showNotification('Nueva reserva pendiente del cliente: Número 05 por Ana Garcia', 'info');
-                }
+                const newThreat = { title: "Detección de Rootkit", ip: "172.16.0.8", target: "AGENTE-DB-02", severity: "critical", time: new Date(), blocked: false };
+                threatsData.unshift(newThreat); // Añadir al inicio para que se vea primero
+                updateThreatsList(threatsData);
+                updateStats();
+                showNotification(`🚨 ¡AMENAZA CRÍTICA! ${newThreat.title} en ${newThreat.ip}`, 'error');
             }, 5000);
-
-            setTimeout(() => {
-                if (!rifaData.numbers[12]) {
-                    rifaData.pendingReservations.push({ number: 12, name: 'Luis Perez', timestamp: Date.now() - 20000 });
-                    rifaData.numbers[12] = { status: 'pending', name: 'Luis Perez', date: new Date(Date.now() - 20000).toISOString(), origin: 'Cliente' };
-                    rifaData.buyers.push({ number: 12, name: 'Luis Perez', status: 'pending', date: new Date(Date.now() - 20000).toISOString(), origin: 'Cliente' });
-                    saveData();
-                    updatePendingReservations();
-                    generateNumbersGrid();
-                    updateStats();
-                    // showNotification('Nueva reserva pendiente del cliente: Número 12 por Luis Perez', 'info');
-                }
-            }, 10000);
         }
 
-        // Initialize the app when the DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        function blockAllThreats() {
+            if (monitoringPaused) {
+                showNotification('El sistema no puede bloquear amenazas: El monitoreo está pausado.', 'warning');
+                return;
+            }
+            let unblockedCount = threatsData.filter(t => !t.blocked).length;
+            if (unblockedCount === 0) {
+                showNotification('No hay amenazas activas que requieran ser bloqueadas.', 'info');
+                return;
+            }
+            
+            threatsData = threatsData.map(t => ({ ...t, blocked: true }));
+            updateThreatsList(threatsData);
+            updateStats();
+            showNotification(`🚫 Se bloquearon ${unblockedCount} amenazas pendientes.`, 'danger');
+        }
+
+        function exportReport() {
+            showNotification('💾 Generando y exportando reporte de seguridad...', 'success');
+            // Simulación de descarga
+            setTimeout(() => {
+                showNotification('✅ Reporte exportado como AMENAZA_ZERO_Reporte.pdf', 'success');
+            }, 2000);
+        }
+
+        function pauseMonitoring() {
+            const btn = document.getElementById('pauseMonitoringBtn');
+            monitoringPaused = !monitoringPaused;
+            if (monitoringPaused) {
+                btn.innerHTML = '▶️ Reanudar Monitoreo';
+                btn.classList.remove('warning');
+                btn.classList.add('primary');
+                clearInterval(statTimer);
+                clearInterval(logTimer);
+                showNotification('⏸️ Monitoreo de seguridad PAUSADO.', 'warning');
+            } else {
+                btn.innerHTML = '⏸️ Pausar Monitoreo';
+                btn.classList.remove('primary');
+                btn.classList.add('warning');
+                startRealtimeUpdates();
+                showNotification('▶️ Monitoreo de seguridad REANUDADO.', 'success');
+            }
+        }
+
+        function refreshData() {
+            if (monitoringPaused) {
+                showNotification('No se puede actualizar manualmente: El monitoreo está pausado.', 'warning');
+                return;
+            }
+            showNotification('🔄 Actualizando todos los datos del dashboard...', 'primary');
+            updateStats();
+            updateThreatsList();
+            Object.values(charts).forEach(chart => chart.update());
+        }
+
+        function openAgentsModal() {
+            renderAgentsList();
+            openModal('agentsModal');
+        }
+        
+        // Función genérica para abrir un modal
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        // Función genérica para cerrar un modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // --- Funcionalidad del Sidebar y Navegación ---
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function showSection(sectionId) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Mostrar la sección seleccionada
+            const targetSection = document.getElementById(`section-${sectionId}`);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+
+            // Actualizar el estado del menú
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-section') === sectionId) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Cerrar el sidebar en móviles
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+            
+            // Si es la sección del dashboard, nos aseguramos de que los gráficos estén dibujados
+            if (sectionId === 'dashboard') {
+                setTimeout(() => {
+                    initCharts();
+                    Object.values(charts).forEach(chart => chart.update());
+                }, 100);
+            }
+
+            showNotification(`Cambiaste a la sección: ${targetSection ? targetSection.querySelector('h2').textContent : 'Dashboard'}`, 'info');
+        }
+
+        // --- Funcionalidad de Estadísticas y Tiempo Real ---
+
+        function updateCurrentTime() {
+            document.getElementById('currentTime').textContent = formatTime(new Date());
+        }
+        
+        function updateStats() {
+            const threatCount = threatsData.length;
+            const criticalCount = threatsData.filter(t => t.severity === 'critical' && !t.blocked).length;
+            const blockedCount = threatsData.filter(t => t.blocked).length;
+            const activeAgents = agentsData.filter(a => a.status === 'active').length;
+
+            document.getElementById('threatCount').textContent = threatCount;
+            document.getElementById('blockedCount').textContent = blockedCount;
+            document.getElementById('criticalEvents').textContent = criticalCount;
+            document.getElementById('activeAgents').textContent = activeAgents;
+            document.getElementById('alertCount').textContent = `${criticalCount} Alertas Activas`;
+        }
+        
+        function simulateNewThreat() {
+            if (monitoringPaused) return;
+
+            const newThreats = [
+                { title: "Escaneo de Puertos (NMAP)", ip: "66.249.66.1", target: "Firewall", severity: "low", time: new Date(), blocked: true },
+                { title: "Intento de Escalada de Privilegios", ip: "192.168.1.5", target: "AGENTE-WIN-01", severity: "high", time: new Date(), blocked: false },
+                { title: "Intento de Ataque DDoS", ip: "52.34.12.98", target: "Load Balancer", severity: "critical", time: new Date(), blocked: false }
+            ];
+
+            // Añadir una amenaza aleatoria del array cada ciclo
+            const newThreat = newThreats[Math.floor(Math.random() * newThreats.length)];
+            threatsData.unshift(newThreat); 
+            
+            // Limitar la lista a las 10 últimas amenazas
+            if (threatsData.length > 10) {
+                threatsData.pop();
+            }
+
+            updateThreatsList();
+            updateStats();
+
+            if (newThreat.severity === 'critical' && !newThreat.blocked) {
+                showNotification(`🚨 ¡ALERTA! ${newThreat.title} detectado.`, 'error');
+            } else if (newThreat.severity === 'high' && !newThreat.blocked) {
+                 showNotification(`⚠️ Amenaza Alta: ${newThreat.title}`, 'warning');
+            }
+        }
+        
+        // --- Funcionalidad de la Lista de Amenazas ---
+
+        function getSeverityClass(severity) {
+            return `severity-${severity}`;
+        }
+        
+        function updateThreatsList(filteredData = threatsData) {
+            const listElement = document.getElementById('threatsList');
+            listElement.innerHTML = ''; // Limpiar la lista actual
+
+            if (filteredData.length === 0) {
+                listElement.innerHTML = '<div style="padding: 1rem; color: #94a3b8; text-align: center;">No hay amenazas que coincidan con los filtros.</div>';
+                return;
+            }
+
+            filteredData.forEach(threat => {
+                const item = document.createElement('div');
+                item.className = 'threat-item';
+                item.setAttribute('data-severity', threat.severity);
+                item.setAttribute('data-ip', threat.ip);
+                item.innerHTML = `
+                    <div class="threat-info">
+                        <div class="threat-title">${threat.title}</div>
+                        <div class="threat-details">
+                            Origen: ${threat.ip} | Objetivo: ${threat.target} | Hora: ${formatTime(threat.time)}
+                        </div>
+                    </div>
+                    <div class="threat-actions">
+                        <span class="threat-severity ${getSeverityClass(threat.severity)}">${threat.severity.toUpperCase()}</span>
+                        <button class="action-btn ${threat.blocked ? 'success' : 'danger'}" style="padding: 0.5rem 1rem;" onclick="toggleBlockStatus('${threat.ip}', event)">
+                            ${threat.blocked ? '✅ Bloqueado' : '❌ Pendiente'}
+                        </button>
+                    </div>
+                `;
+                listElement.appendChild(item);
+            });
+        }
+        
+        function toggleBlockStatus(ip, event) {
+            event.stopPropagation(); // Evita que se ejecute el onclick del padre si lo tuviera
+            const index = threatsData.findIndex(t => t.ip === ip && !t.blocked);
+
+            if (index !== -1) {
+                threatsData[index].blocked = true;
+                showNotification(`✅ IP ${ip} bloqueada con éxito.`, 'success');
+            } else {
+                 showNotification(`⚠️ IP ${ip} ya estaba bloqueada o no se encontró pendiente.`, 'info');
+            }
+
+            // Volver a renderizar con los filtros actuales aplicados
+            const searchVal = document.getElementById('searchInput').value;
+            const severityVal = document.getElementById('severityFilter').value;
+            let filtered = filterAndSearchThreats(searchVal, severityVal);
+            updateThreatsList(filtered);
+            updateStats();
+        }
+
+        function filterAndSearchThreats(searchTerm, severityFilter) {
+            let filtered = threatsData.filter(threat => {
+                const searchMatch = !searchTerm || threat.title.toLowerCase().includes(searchTerm.toLowerCase()) || threat.ip.includes(searchTerm);
+                const severityMatch = severityFilter === 'all' || threat.severity === severityFilter;
+                return searchMatch && severityMatch;
+            });
+            return filtered;
+        }
+
+        function searchThreats() {
+            const searchTerm = document.getElementById('searchInput').value;
+            const severityFilter = document.getElementById('severityFilter').value;
+            updateThreatsList(filterAndSearchThreats(searchTerm, severityFilter));
+        }
+
+        function filterBySeverity() {
+            searchThreats(); // Reutiliza la función de búsqueda para aplicar ambos filtros
+        }
+        
+        function clearThreats() {
+            threatsData = [];
+            updateThreatsList();
+            updateStats();
+            showNotification('🗑️ Lista de amenazas limpiada. ¡Sistema libre de alertas! (simulado)', 'info');
+        }
+
+        // --- Funcionalidad de Logs en Tiempo Real ---
+
+        function addLogEntry(level, message) {
+            if (!logsEnabled) return;
+
+            const logConsole = document.getElementById('logConsole');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const time = formatTime(new Date());
+            entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-level ${level}">[${level.toUpperCase()}]</span> ${message}`;
+
+            logConsole.prepend(entry); // Añadir al principio para ver los logs más recientes
+            
+            // Mantener el scroll al inicio para ver el log más reciente, a menos que el usuario esté haciendo scroll
+            if (logConsole.scrollTop < 100) { 
+                logConsole.scrollTop = 0;
+            }
+            
+            // Limitar el número de logs para evitar problemas de rendimiento en una presentación larga
+            if (logConsole.children.length > 50) {
+                logConsole.removeChild(logConsole.lastChild);
+            }
+        }
+        
+        function simulateLogActivity() {
+            if (!logsEnabled || monitoringPaused) return;
+
+            const logMessages = [
+                { level: "info", message: "Conexión SSH exitosa desde 10.0.0.5." },
+                { level: "warning", message: "Error 404 en /admin/backup." },
+                { level: "info", message: "Agente AGENTE-FW-01 heartbeat recibido." },
+                { level: "error", message: "Intento de acceso denegado a base de datos crítica." },
+                { level: "info", message: "Regla de firewall actualizada." }
+            ];
+
+            const randomLog = logMessages[Math.floor(Math.random() * logMessages.length)];
+            addLogEntry(randomLog.level, randomLog.message);
+        }
+
+        function clearLogs() {
+            document.getElementById('logConsole').innerHTML = '';
+            showNotification('🗑️ Logs de consola limpiados.', 'info');
+        }
+
+        function pauseLogs() {
+            logsEnabled = !logsEnabled;
+            const btn = document.getElementById('logsToggleBtn');
+            if (logsEnabled) {
+                btn.innerHTML = '⏸️';
+                showNotification('▶️ Logs en tiempo real reanudados.', 'success');
+            } else {
+                btn.innerHTML = '▶️';
+                showNotification('⏸️ Logs en tiempo real pausados.', 'warning');
+            }
+        }
+
+        function exportLogs() {
+            showNotification('💾 Logs exportados como AMENAZA_ZERO_Logs.txt', 'success');
+        }
+
+        // Inicializar logs con datos de simulación
+        function initLogs() {
+            logsData.reverse().forEach(log => {
+                addLogEntry(log.level, log.message);
+            });
+            logTimer = setInterval(simulateLogActivity, 1500); // Nuevo log cada 1.5 segundos
+        }
+        
+        // --- Funcionalidad del Mapa de Ataques (Globe) ---
+
+        function toggleGlobeAnimation() {
+            const globe = document.getElementById('globe');
+            const btn = document.getElementById('globeToggleBtn');
+            globeAnimationPaused = !globeAnimationPaused;
+
+            if (globeAnimationPaused) {
+                globe.style.animationPlayState = 'paused';
+                document.querySelectorAll('.attack-ping').forEach(ping => ping.style.animationPlayState = 'paused');
+                btn.innerHTML = '▶️';
+                showNotification('⏸️ Animación del Mapa de Ataques pausada.', 'info');
+            } else {
+                globe.style.animationPlayState = 'running';
+                document.querySelectorAll('.attack-ping').forEach(ping => ping.style.animationPlayState = 'running');
+                btn.innerHTML = '⏸️';
+                showNotification('▶️ Animación del Mapa de Ataques reanudada.', 'success');
+            }
+        }
+
+        function resetMap() {
+             showNotification('🔄 Mapa de Ataques reseteado y actualizado.', 'info');
+             // Podrías añadir lógica aquí para regenerar las pings o resetear la rotación si fuera un mapa más complejo
+        }
+
+        // --- Funcionalidad del Modal de Agentes ---
+
+        function renderAgentsList(filteredAgents = agentsData) {
+            const listElement = document.getElementById('agentsList');
+            listElement.innerHTML = '';
+
+            if (filteredAgents.length === 0) {
+                listElement.innerHTML = '<div style="padding: 1rem; color: #94a3b8; text-align: center;">No hay agentes que coincidan con los filtros.</div>';
+                return;
+            }
+
+            filteredAgents.forEach(agent => {
+                const isDisconnected = agent.status === 'disconnected';
+                const card = document.createElement('div');
+                card.className = `agent-card ${isDisconnected ? 'disconnected' : ''}`;
+                card.innerHTML = `
+                    <div class="agent-name">${isDisconnected ? '🔴' : '🟢'} ${agent.name}</div>
+                    <div class="agent-status">
+                        IP: ${agent.ip} | OS: ${agent.os} <br>
+                        Estado: <span style="color: ${isDisconnected ? '#ef4444' : '#10b981'}; font-weight: bold;">${isDisconnected ? 'Desconectado' : 'Activo'}</span>
+                    </div>
+                    <div style="margin-top: 10px; display: flex; gap: 5px;">
+                        <button class="action-btn success" style="padding: 0.3rem 0.5rem; font-size: 0.8rem;" onclick="performAgentAction(${agent.id}, 'restart', event)">Reiniciar</button>
+                        <button class="action-btn danger" style="padding: 0.3rem 0.5rem; font-size: 0.8rem;" onclick="performAgentAction(${agent.id}, 'remove', event)">Remover</button>
+                    </div>
+                `;
+                listElement.appendChild(card);
+            });
+        }
+
+        function searchAgents() {
+            const searchTerm = document.getElementById('agentSearchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('agentStatusFilter').value;
+            filterAgents(searchTerm, statusFilter);
+        }
+
+        function filterAgents(searchTerm = document.getElementById('agentSearchInput').value.toLowerCase(), statusFilter = document.getElementById('agentStatusFilter').value) {
+             let filtered = agentsData.filter(agent => {
+                const searchMatch = agent.name.toLowerCase().includes(searchTerm) || agent.ip.includes(searchTerm);
+                const statusMatch = statusFilter === 'all' || agent.status === statusFilter;
+                return searchMatch && statusMatch;
+            });
+            renderAgentsList(filtered);
+        }
+
+        function performAgentAction(agentId, action, event) {
+            event.stopPropagation(); // Evitar el click en el card
+            const agent = agentsData.find(a => a.id === agentId);
+            if (!agent) return;
+
+            if (action === 'restart') {
+                agent.status = 'active'; // Simulación de reinicio exitoso
+                showNotification(`🔄 Agente ${agent.name} reiniciado con éxito.`, 'success');
+            } else if (action === 'remove') {
+                agentsData = agentsData.filter(a => a.id !== agentId);
+                showNotification(`🗑️ Agente ${agent.name} removido del sistema.`, 'danger');
+            }
+            
+            // Volver a renderizar la lista y actualizar estadísticas
+            renderAgentsList();
+            updateStats();
+        }
+
+        // --- Funcionalidad del Modal de Detalles de Estadísticas ---
+        
+        function showDetails(type) {
+            const titleElement = document.getElementById('detailsTitle');
+            const contentElement = document.getElementById('detailsContent');
+            
+            let title, content;
+            
+            switch(type) {
+                case 'threats':
+                    title = 'Detalles de Amenazas Detectadas';
+                    content = `<p><strong>Total de Amenazas (Últimas 24h):</strong> ${threatsData.length}</p>
+                               <p><strong>Amenazas Críticas Pendientes:</strong> ${threatsData.filter(t => t.severity === 'critical' && !t.blocked).length}</p>
+                               <p>Esta sección proporciona un desglose completo de todas las alertas, permitiendo un análisis profundo de cada incidente.</p>`;
+                    break;
+                case 'blocked':
+                    title = 'Detalles de Ataques Bloqueados';
+                    content = `<p><strong>Total Bloqueados (Últimas 24h):</strong> ${threatsData.filter(t => t.blocked).length}</p>
+                               <p><strong>Efectividad del Bloqueo:</strong> 99.7%</p>
+                               <p>La alta tasa de bloqueo indica la eficiencia del sistema de respuesta automática.</p>`;
+                    break;
+                case 'ips':
+                    title = 'Detalles de IPs Maliciosas';
+                    content = `<p><strong>IPs únicas bloqueadas:</strong> 89</p>
+                               <p><strong>Países con más ataques:</strong> Rusia, China, EE. UU.</p>
+                               <p>Se recomienda la revisión de las listas negras (blacklists) en el firewall.</p>`;
+                    break;
+                case 'critical':
+                    title = 'Detalles de Eventos Críticos';
+                    const criticalList = threatsData.filter(t => t.severity === 'critical' && !t.blocked).map(t => `<li>${t.title} (${t.ip})</li>`).join('');
+                    content = `<p><strong>Eventos Críticos Pendientes:</strong> ${criticalList ? '<ul>' + criticalList + '</ul>' : 'Ninguno.'}</p>
+                               <p>Priorizar la investigación y mitigación de estos eventos de alta severidad.</p>`;
+                    break;
+                case 'agents':
+                    title = 'Detalles de Agentes';
+                    content = `<p><strong>Agentes Activos:</strong> ${agentsData.filter(a => a.status === 'active').length}</p>
+                               <p><strong>Agentes Desconectados:</strong> ${agentsData.filter(a => a.status === 'disconnected').length}</p>
+                               <p>Asegúrate de que todos los endpoints clave tengan agentes activos y funcionales.</p>`;
+                    break;
+                case 'compliance':
+                    title = 'Detalles de Cumplimiento';
+                    content = `<p><strong>Nivel General:</strong> 94%</p>
+                               <p><strong>Áreas a mejorar:</strong> Hardening de Servidores (85%), Revisión de Logs de Acceso (90%).</p>
+                               <p>Accede a la sección de Cumplimiento para reportes completos.</p>`;
+                    break;
+                default:
+                    title = 'Detalles Adicionales';
+                    content = '<p>No hay información detallada disponible para este elemento.</p>';
+            }
+
+            titleElement.textContent = title;
+            contentElement.innerHTML = content;
+            openModal('detailsModal');
+        }
+
+        // --- Funcionalidad de Gráficos (Chart.js) ---
+
+        function initCharts() {
+            // Datos de simulación para gráficos
+            const severityData = [45, 250, 1500, 3000]; // Crítico, Alto, Medio, Bajo
+            const severityLabels = ['Crítico', 'Alto', 'Medio', 'Bajo'];
+            const trafficData = [20, 30, 45, 60, 55, 70, 80, 75, 90, 100, 110, 120, 115, 130, 140, 150, 145, 160, 170, 180, 175, 190, 200, 210]; // GBs
+            const trafficLabels = Array.from({ length: 24 }, (_, i) => `${i + 1}h`);
+            const attackTypesData = [750, 420, 180, 100]; // Brute Force, Injection, Malware, Recon
+
+            // Gráfico 1: Eventos por Severidad (Doughnut)
+            if (charts.severityChart) charts.severityChart.destroy();
+            const ctx1 = document.getElementById('severityChart').getContext('2d');
+            charts.severityChart = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: severityLabels,
+                    datasets: [{
+                        data: severityData,
+                        backgroundColor: [
+                            chartColors.critical,
+                            chartColors.high,
+                            chartColors.medium,
+                            chartColors.low
+                        ],
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: chartColors.info }
+                        }
+                    }
+                }
+            });
+
+            // Gráfico 2: Tráfico de Red (Line)
+            if (charts.trafficChart) charts.trafficChart.destroy();
+            const ctx2 = document.getElementById('trafficChart').getContext('2d');
+            charts.trafficChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: trafficLabels,
+                    datasets: [{
+                        label: 'Tráfico (GB/h)',
+                        data: trafficData,
+                        borderColor: chartColors.info,
+                        backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                        tension: 0.4,
+                        pointRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { ticks: { color: chartColors.secondary }, grid: { color: '#334155' } },
+                        y: { ticks: { color: chartColors.secondary }, grid: { color: '#334155' } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Gráfico 3: Tipos de Ataques Detectados (Bar)
+            if (charts.attackTypesChart) charts.attackTypesChart.destroy();
+            const ctx3 = document.getElementById('attackTypesChart').getContext('2d');
+            charts.attackTypesChart = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: ['Fuerza Bruta', 'Inyección', 'Malware', 'Reconocimiento'],
+                    datasets: [{
+                        label: 'Conteo de Ataques',
+                        data: attackTypesData,
+                        backgroundColor: [
+                            chartColors.danger, chartColors.high, chartColors.critical, chartColors.info
+                        ],
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y', // Hace el gráfico horizontal
+                    scales: {
+                        x: { ticks: { color: chartColors.secondary }, grid: { color: '#334155' } },
+                        y: { ticks: { color: chartColors.secondary }, grid: { color: '#334155' } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function refreshChart(chartId) {
+            if (charts[chartId]) {
+                 // Simular nuevos datos para un efecto de actualización
+                 let newData;
+                 if (chartId === 'trafficChart') {
+                    newData = charts[chartId].data.datasets[0].data.map(d => Math.max(0, d + (Math.random() * 20 - 10)));
+                 } else if (chartId === 'severityChart') {
+                    newData = charts[chartId].data.datasets[0].data.map(d => d + Math.floor(Math.random() * 10));
+                 } else if (chartId === 'attackTypesChart') {
+                    newData = charts[chartId].data.datasets[0].data.map(d => d + Math.floor(Math.random() * 5));
+                 }
+
+                 charts[chartId].data.datasets[0].data = newData;
+                 charts[chartId].update();
+                 showNotification(`🔄 Gráfico ${chartId.replace('Chart', '')} actualizado.`, 'primary');
+            }
+        }
+
+        function downloadChart(chartId) {
+            if (charts[chartId]) {
+                const a = document.createElement('a');
+                a.href = charts[chartId].toBase64Image();
+                a.download = `${chartId.replace('Chart', '')}_reporte.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showNotification(`💾 Gráfico ${chartId.replace('Chart', '')} descargado.`, 'success');
+            }
+        }
+
+        // --- Inicialización y Bucle Principal ---
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function startRealtimeUpdates() {
+            // Actualizar tiempo y estado
+            setInterval(updateCurrentTime, 1000); 
+            // Simular nuevas amenazas cada 2 segundos
+            threatTimer = setInterval(simulateNewThreat, 2000); 
+             // Simular actividad de logs cada 1.5 segundos
+            logTimer = setInterval(simulateLogActivity, 1500); 
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            initLogs();
+            updateThreatsList();
+            updateStats();
+            renderAgentsList(); // Inicializar la lista del modal de agentes
+            startRealtimeUpdates();
+            showSection('dashboard'); // Asegura que se vea el dashboard al inicio
+
+            // Código para cerrar el sidebar al hacer clic fuera
+            document.addEventListener('click', (e) => {
+                const sidebar = document.getElementById('sidebar');
+                const menuBtn = document.querySelector('.menu-btn');
+                
+                if (sidebar.classList.contains('active') && 
+                    !sidebar.contains(e.target) && 
+                    !menuBtn.contains(e.target) && 
+                    e.target.tagName !== 'BUTTON') { // No cerrar si clickea en un botón del sidebar
+                    sidebar.classList.remove('active');
+                }
+            });
+        });
     </script>
 </body>
 </html>
-
