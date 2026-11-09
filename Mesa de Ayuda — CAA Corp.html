@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mesa de Ayuda — CAA Corp</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--ink:#2a2230;--paper:#f6e7d8;--teal:#2f6f8f;--warm:#e8a77c;--ok:#4c9a6a;--bad:#c4503f}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#1d1520;font-family:'Space Grotesk',system-ui,sans-serif;color:#fff;overflow:hidden}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+#hud{position:fixed;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 0;display:flex;gap:10px;align-items:center;pointer-events:none;font-weight:600}
+#clock{background:#2f6f8fcc;padding:8px 14px;border-radius:999px}
+.st{background:#00000066;padding:8px 12px;border-radius:999px;font-size:14px}
+#hint{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);text-align:center;font-size:14px;opacity:.85;pointer-events:none}
+#use{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 56px);transform:translateX(-50%);display:none;background:var(--warm);color:var(--ink);border:0;border-radius:12px;padding:14px 22px;font:700 16px 'Space Grotesk',system-ui,sans-serif;cursor:pointer}
+#pc{position:fixed;inset:0;display:none;background:#1d1520e6;padding:calc(env(safe-area-inset-top,0px) + 16px) 12px calc(env(safe-area-inset-bottom,0px) + 16px)}
+#win{max-width:980px;height:100%;margin:0 auto;background:var(--paper);color:var(--ink);border-radius:10px;display:grid;grid-template-columns:minmax(200px,300px) 1fr;grid-template-rows:auto 1fr;overflow:hidden;box-shadow:0 20px 60px #000a}
+#bar{grid-column:1/3;background:var(--teal);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-weight:700}
+#bar button{background:#ffffff26;color:#fff;border:0;border-radius:8px;padding:6px 12px;font:600 14px inherit;cursor:pointer}
+#list{border-right:2px solid #d9c3ae;overflow:auto}
+.tk{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #e5d2bf;background:transparent;padding:12px 14px;font:inherit;color:inherit;cursor:pointer}
+.tk:hover,.tk:focus-visible{background:#ecd4bd;outline:none}
+.tk.on{background:#e8a77c55}.tk.done{opacity:.45;text-decoration:line-through}
+.tk small{display:block;opacity:.7;margin-top:2px}
+.pri{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+#det{padding:18px 20px;overflow:auto}
+#det h2{margin:0 0 4px;font-size:22px}
+#det p{line-height:1.55;max-width:62ch}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:12px 14px;border-radius:8px;border:2px solid var(--teal);background:#fff;color:var(--ink);font:inherit;cursor:pointer}
+.opt:hover,.opt:focus-visible{background:var(--teal);color:#fff;outline:none}
+#fb{margin-top:14px;padding:12px 14px;border-radius:8px;font-weight:600;display:none}
+#end{position:fixed;inset:0;display:none;place-items:center;background:#1d1520f2;text-align:center;padding:24px}
+#end div{max-width:460px}#end h1{font-size:34px;margin:0 0 8px}
+#end button{margin-top:18px;background:var(--warm);color:var(--ink);border:0;border-radius:12px;padding:14px 22px;font:700 16px inherit;cursor:pointer}
+#dc{position:fixed;inset:0;display:none;background:#0b1118f2;padding:calc(env(safe-area-inset-top,0px) + 16px) 12px 16px;overflow:auto}
+#sw{max-width:760px;margin:0 auto;background:#16202b;border:2px solid #2f6f8f;border-radius:10px;padding:16px}
+#sw h2{margin:0 0 4px}#sw p{margin:4px 0 12px;line-height:1.5}
+#pg{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;margin:12px 0}
+.pt{aspect-ratio:1;border:0;border-radius:4px;background:#0a0f14;color:#9fb3c4;font-family:inherit;font-weight:600;font-size:11px;cursor:pointer;border-bottom:3px solid #3a4b5a;padding:0}
+.pt.on{background:#2a4fd0;color:#fff;border-bottom-color:#7da0ff}.pt.bad{background:#a63b2f;color:#fff;border-bottom-color:#e8786a}.pt.new{background:#4c9a6a;color:#fff;border-bottom-color:#9fe0b4}
+.sb{background:#2f6f8f;color:#fff;border:0;border-radius:8px;padding:10px 14px;margin:4px 6px 4px 0;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer}.sb.act{background:#4c9a6a}.sb.dg{background:#6a3a40}
+#dg{line-height:1.6;background:#101923;border-radius:8px;padding:10px 12px;margin:8px 0}#dg small{display:block;opacity:.7;margin-top:4px}
+#tm{background:#05080c;color:#cfe8d5;font-family:'Courier New',ui-monospace,monospace;font-size:13px;white-space:pre-wrap;height:min(38vh,320px);overflow:auto;padding:10px;border-radius:6px 6px 0 0}
+#pl{display:flex;gap:6px;background:#05080c;padding:6px 10px 10px;border-radius:0 0 6px 6px;font-family:'Courier New',ui-monospace,monospace;font-size:13px;color:#cfe8d5;border-top:1px solid #1d2a36}
+#ti{flex:1;min-width:0;background:transparent;border:0;color:#fff;font:inherit;font-size:16px;outline:none}
+#hud{flex-wrap:wrap}#snd{pointer-events:auto;border:0;color:#fff;cursor:pointer;font-family:inherit}
+#bar{flex-wrap:wrap;gap:6px}#tabs{display:flex;gap:6px;flex-wrap:wrap}#bar button.on{background:#fff;color:var(--teal)}
+#app{grid-column:1/3;grid-row:2/-1;overflow:auto;padding:14px 18px;display:none}
+#win[data-tab]:not([data-tab="t"]) #app{display:block}#win[data-tab]:not([data-tab="t"]) #list,#win[data-tab]:not([data-tab="t"]) #det{display:none}
+#app h3{margin:0 0 10px}#app table{width:100%;border-collapse:collapse}#app td,#app th{padding:8px;border-bottom:1px solid #d9c3ae;text-align:left;vertical-align:top}
+#app button{margin:2px;padding:6px 10px;border-radius:6px;border:2px solid var(--teal);background:#fff;color:var(--ink);font-family:inherit;font-weight:600;cursor:pointer}#app button:hover{background:var(--teal);color:#fff}
+.mail{background:#fff;border-radius:8px;padding:10px 12px;margin:8px 0}.mail small,.card small{display:block;opacity:.7}.tk2{background:#fff;border-radius:8px;padding:8px 12px;margin-bottom:10px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}.card{background:#fff;border-radius:8px;padding:10px 12px}.card.dn{background:#f6d0c9}.card span{display:block;margin:4px 0}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translateX(-50%);background:#101923;border:2px solid var(--warm);padding:10px 16px;border-radius:10px;font-weight:600;display:none;z-index:50;max-width:90vw;text-align:center}
+#xh{position:fixed;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:#fff9;pointer-events:none}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 55%,#0007 100%)}
+#joy{position:fixed;left:calc(env(safe-area-inset-left,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,52px);gap:6px}
+#joy button{background:#ffffff40;border:0;border-radius:12px;color:#fff;font-size:20px;touch-action:none}#joy [data-k=KeyW]{grid-column:2}#joy [data-k=KeyA]{grid-column:1;grid-row:2}#joy [data-k=KeyS]{grid-column:2;grid-row:2}#joy [data-k=KeyD]{grid-column:3;grid-row:2}
+@media(pointer:coarse){#joy{display:grid}}#end button.alt{background:#ffffff26;color:#fff;margin-left:8px}#end div{max-width:540px}
+#pc{background:linear-gradient(135deg,#17306e,#0b1530 70%)}#pc::before{content:'';position:absolute;right:6%;bottom:9%;border-left:140px solid transparent;border-right:140px solid transparent;border-bottom:240px solid #e8861a55;pointer-events:none}
+#win{height:calc(100% - 46px)}#tbar{position:absolute;left:0;right:0;bottom:0;height:40px;background:#0b1328;display:flex;justify-content:space-between;align-items:center;padding:0 16px;font-size:14px;z-index:1}
+#fps{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);font-size:12px;opacity:.6;pointer-events:none}
+#co{background:#05080c;color:#cfe8d5;font-family:'Courier New',ui-monospace,monospace;font-size:13px;white-space:pre-wrap;height:min(48vh,380px);overflow:auto;padding:10px;border-radius:6px 6px 0 0}
+#cl{display:flex;gap:6px;background:#05080c;color:#cfe8d5;padding:6px 10px 10px;border-radius:0 0 6px 6px;font-family:'Courier New',ui-monospace,monospace;font-size:13px}
+#ci{flex:1;min-width:0;background:transparent;border:0;color:#fff;font:inherit;font-size:16px;outline:none}
+.bios{background:#0a1a8f;color:#e8e8e8;font-family:'Courier New',ui-monospace,monospace;border:2px solid #c0c0c0}.bm{background:#0a7ab0;display:flex;flex-wrap:wrap}
+#app .bios button{background:transparent;color:#fff;border:0;border-radius:0;padding:6px 14px;margin:0}#app .bios button.on,#app .bios button:hover{background:#c0c0c0;color:#000}
+.bb{padding:14px;min-height:200px}.br{display:flex;justify-content:space-between;max-width:420px;padding:4px 0}#app .bios .bb button{border:1px solid #c0c0c0;margin:4px 6px 4px 0}
+@media(max-width:640px){#win{grid-template-columns:1fr;grid-template-rows:auto 150px 1fr}#bar{grid-column:1}#list{border-right:0;border-bottom:2px solid #d9c3ae}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud"><div id="clock"></div><div class="st" id="s1"></div><div class="st" id="s2"></div><div class="st" id="s3"></div><div class="st" id="s4"></div><button class="st" id="snd" aria-label="Sonido">🔊</button></div>
+<div id="xh"></div><div id="fps"></div><div id="toast"></div><div id="hint">Arrastra para mirar · WASD / flechas para moverte · data center por la puerta izquierda · pasillo y apartamento por la derecha</div>
+<button id="use">Sentarse en la PC (E)</button>
+<div id="joy"><button data-k="KeyW">▲</button><button data-k="KeyA">◀</button><button data-k="KeyS">▼</button><button data-k="KeyD">▶</button></div>
+<div id="pc"><div id="tbar"><span id="tbc"></span><span>🛜 🔊 ✉ 🔋</span></div><div id="win">
+ <div id="bar"><span>CAA Corp · Escritorio de TI</span><div id="tabs"></div><button id="endday">Terminar jornada</button><button id="close">Apagar pantalla (Esc)</button></div>
+ <div id="list"></div>
+ <div id="app"></div><div id="det"><h2>Selecciona un ticket</h2><p>Atiende cada caso eligiendo la mejor acción. Cada decisión consume tiempo y afecta la satisfacción de los usuarios y la seguridad de la empresa.</p></div>
+</div></div>
+<div id="dc"><div id="sw"><h2>Consola del switch core — Cisco Catalyst 2960</h2><div id="dg"></div><div id="pg"></div><div id="tm"></div><label id="pl"><span id="ps"></span><input id="ti" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Línea de comandos"></label><p><small>Rojo = puerto apagado · Azul = access en VLAN distinta de 1 · Verde = troncal. Toca un puerto para escribir su interfaz.</small></p><button class="sb" id="bx">Salir (Esc)</button></div></div>
+<div id="end"><div><h1 id="eh"></h1><p id="ep"></p><p id="ea"></p><button id="gh">Ir a casa</button><button id="rs" class="alt">Reiniciar progreso</button></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ---------- DATOS DEL JUEGO ---------- */
+const POOL=[
+{p:2,from:"Marta (Contabilidad)",t:"Cuenta bloqueada",b:"No puedo entrar a mi usuario desde esta mañana y tengo cierre de mes. Dice que la cuenta está bloqueada.",o:[
+ ["Desbloquear en Active Directory y revisar el log de intentos fallidos",8,6,"Revisaste los eventos 4740 y era una contraseña vieja guardada en el celular."],
+ ["Restablecer la contraseña por chat sin verificar identidad",4,-10,"Alguien pudo suplantarla. Siempre valida la identidad primero."],
+ ["Pedirle que espere 30 minutos al desbloqueo automático",-8,0,"Marta pierde horas en pleno cierre."]]},
+{p:3,from:"Seguridad (alerta automática)",t:"Correo sospechoso reportado",b:"Tres empleados recibieron un correo de 'Microsoft 365' pidiendo verificar su cuenta con un enlace acortado.",o:[
+ ["Aislar el correo, bloquear el dominio y avisar a los usuarios",5,12,"Contuviste el phishing. Nadie hizo clic."],
+ ["Responder al remitente para pedir más información",0,-12,"Confirmaste que el buzón está activo. Mala idea."],
+ ["Ignorarlo, parece spam normal",2,-14,"Un usuario ingresó credenciales. Tocó rotar contraseñas."]]},
+{p:1,from:"Luis (Operaciones)",t:"Impresora no imprime",b:"La impresora del segundo piso muestra 'fuera de línea'. Es la única que imprime etiquetas.",o:[
+ ["Revisar cable de red, cola de impresión y reiniciar el spooler",9,0,"El spooler estaba trabado. Resuelto en 5 minutos."],
+ ["Reinstalar el driver en todas las PC",2,0,"Funcionó, pero tardaste demasiado para algo simple."],
+ ["Comprar una impresora nueva",-5,-2,"Gasto innecesario para una cola trabada."]]},
+{p:3,from:"Gerencia General",t:"Laptop de ejecutivo sin cifrar",b:"El auditor detectó que la laptop del gerente no tiene BitLocker activo y viaja con frecuencia.",o:[
+ ["Activar BitLocker, guardar la clave en AD y documentar",6,14,"Cumples con la política y reduces riesgo de fuga."],
+ ["Posponerlo hasta la próxima auditoría",0,-12,"Una laptop robada expondría datos sensibles."],
+ ["Activarlo sin respaldar la clave de recuperación",-6,4,"Queda cifrada, pero si falla el TPM perderán los datos."]]},
+{p:2,from:"Andrea (RRHH)",t:"Alta de nuevo empleado",b:"Mañana entra un analista. Necesita usuario, correo Microsoft 365, acceso a la carpeta de su área y una laptop.",o:[
+ ["Crear usuario con mínimo privilegio, grupo del área y licencia M365",8,8,"Alta correcta con permisos justos."],
+ ["Copiar los permisos de otro analista antiguo",4,-8,"Heredó accesos que no necesita."],
+ ["Darle administrador local para que 'no moleste'",5,-14,"Violó el principio de mínimo privilegio."]]},
+{p:2,from:"Carlos (Ventas)",t:"Computadora muy lenta",b:"Mi PC tarda 10 minutos en arrancar y el ventilador suena fuerte desde hace días.",o:[
+ ["Revisar programas de inicio, disco, malware y temperatura",9,3,"Había un minero de cripto. Eliminado y reportado."],
+ ["Formatear sin hacer respaldo",-6,0,"Carlos perdió su carpeta de cotizaciones."],
+ ["Decirle que reinicie más seguido",-7,-4,"No resolvió nada y el malware siguió."]]},
+{p:3,from:"Soporte remoto",t:"Proveedor pide acceso remoto",b:"Un proveedor de software pide conectarse a un servidor por TeamViewer 'urgente' y sin ticket previo.",o:[
+ ["Verificar con el responsable, acceso temporal y sesión grabada",4,12,"Acceso controlado y auditable."],
+ ["Darle la clave porque dice que es urgente",5,-16,"Acceso no autorizado a un servidor. Incidente grave."],
+ ["Negarlo sin explicar nada",-4,2,"Seguro, pero el proveedor quedó molesto."]]},
+{p:1,from:"Sofía (Legal)",t:"Outlook no sincroniza",b:"Mi correo dejó de actualizarse en el escritorio, en el celular sí llega.",o:[
+ ["Recrear el perfil de Outlook y revisar la cuota del buzón",8,0,"El OST estaba corrupto."],
+ ["Cambiarle el correo a otra cuenta",-6,-3,"Rompiste su historial y firmas."],
+ ["Reiniciar el servidor de correo",-10,-6,"Afectaste a toda la empresa."]]},
+{p:2,from:"Centro de copiado",copy:1,t:"Copiadora atascada",b:"La copiadora principal marca atasco en la bandeja 2 y hay una cola de trabajos urgentes.",o:[["Abrir las puertas, retirar el papel con cuidado y revisar los rodillos",9,2,"Era una hoja arrugada en el rodillo. Cola liberada."],["Tirar del papel con fuerza para sacarlo rápido",-8,0,"Rompiste el rodillo. Toca llamar al técnico."],["Apagarla y esperar al proveedor sin revisar",-4,0,"Perdiste horas con un atasco simple."]]},
+{p:2,from:"Centro de copiado",copy:1,t:"Escaneo a correo no envía",b:"El escáner de la copiadora marca error de envío al mandar documentos al correo.",o:[["Revisar las credenciales SMTP y usar un relay autenticado",8,10,"La clave del buzón de escaneo había cambiado. Corregido con autenticación."],["Abrir el relay de correo sin autenticación",6,-16,"Dejaste un relay abierto que se puede usar para spam."],["Reiniciar el servidor de correo",-8,-3,"Cortaste el correo a toda la corporación."]]},
+{p:3,from:"Centro de copiado",copy:1,t:"Documentos confidenciales en la bandeja",b:"Alguien dejó contratos y nóminas impresos en la bandeja de salida de la copiadora.",o:[["Recogerlos, avisar a RRHH y activar impresión con PIN",6,14,"Evitaste una fuga de información y activaste impresión segura."],["Dejarlos ahí hasta que alguien los reclame",2,-12,"Cualquiera pudo leer datos sensibles."],["Tirarlos a la basura común",0,-14,"Documentos sensibles sin destrucción segura."]]},
+{p:2,from:"Gerencia General",t:"Wi-Fi caído en la sala de juntas",b:"Hay una reunión con un cliente en 20 minutos y nadie logra conectarse a la red inalámbrica.",o:[["Revisar el AP, el canal y el servidor DHCP",9,2,"El pool DHCP estaba agotado. Ampliaste el rango."],["Dar la clave del Wi-Fi interno a los invitados",4,-10,"Los invitados quedaron en la red corporativa. Usa una red de invitados."],["Reiniciar todo el edificio",-8,-2,"Cortaste la red a todos por un problema local."]]},
+{p:2,from:"Operaciones",t:"Respaldo nocturno fallido",b:"El job de backup de anoche terminó con error y el último respaldo válido tiene 3 días.",o:[["Revisar logs, liberar espacio y relanzar el respaldo",8,10,"Era falta de espacio en el destino. Respaldo completo."],["Marcarlo como completado en el reporte",2,-14,"Falsear el reporte deja a la empresa sin respaldo real."],["Esperar a la noche para ver si se arregla solo",-4,-8,"Sigues expuesto a pérdida de datos."]]},
+{p:3,from:"Seguridad (alerta automática)",t:"Posible ransomware en una PC",b:"El antivirus detectó archivos renombrados con extensión desconocida en un equipo de Ventas.",o:[["Aislar el equipo de la red, preservar evidencias y escalar",4,16,"Contuviste la propagación. Buena respuesta a incidentes."],["Apagar la PC y seguir con otros tickets",2,-6,"Perdiste evidencia volátil y no revisaste otros equipos."],["Pedir al usuario que borre los archivos",-6,-16,"Borrar no elimina el malware ni la propagación."]]},
+{p:2,from:"Mesa de Ayuda",t:"Clave olvidada por teléfono",b:"Alguien llama diciendo ser un gerente y pide una clave nueva de inmediato, sin poder ir a la oficina.",o:[["Verificar identidad y devolver la llamada al número registrado",6,12,"Era un intento de ingeniería social. Lo detectaste."],["Darle la clave por teléfono para no demorar",5,-16,"Entregaste acceso a un posible atacante."],["Negarte sin ofrecer alternativa",-6,2,"Seguro, pero dejaste al usuario sin camino claro."]]},
+{p:1,from:"Jorge (Ventas)",t:"Pantalla azul en la laptop",b:"La laptop se reinicia con pantalla azul al abrir el ERP. Tengo una demostración hoy.",o:[["Revisar el código de error, controladores y memoria",9,2,"Un driver gráfico reciente era el culpable. Revertido."],["Reinstalar Windows sin respaldar",-8,0,"Perdió archivos locales."],["Prestarle una laptop sin sus políticas de seguridad",2,-6,"Resolvió la demo, pero sin controles."]]},
+{p:2,from:"Teletrabajo",t:"La VPN no conecta",b:"Varios usuarios remotos no logran entrar a la VPN desde esta mañana.",o:[["Revisar certificado, MFA y logs del portal VPN",9,6,"El certificado había expirado. Renovado."],["Desactivar el MFA temporalmente",5,-16,"Quitaste una barrera clave de seguridad."],["Pedir que usen datos móviles",-5,0,"No ataca la causa raíz."]]},
+{p:1,from:"Contabilidad",t:"Licencia de Office expirada",b:"Varios equipos muestran producto sin licencia en Excel.",o:[["Revisar el tenant de Microsoft 365 y reasignar licencias",9,2,"Faltaban licencias asignadas tras un alta."],["Instalar una versión pirata",-6,-18,"Riesgo legal y de malware."],["Pedirles que trabajen en una hoja personal en línea",-4,-4,"Sacaste datos financieros de la plataforma autorizada."]]},
+{p:2,from:"Operaciones",t:"Servidor de archivos sin espacio",b:"El recurso compartido de Operaciones está al 99% y nadie puede guardar.",o:[["Analizar el uso, archivar lo antiguo y aplicar cuotas",9,4,"Recuperaste espacio y pusiste cuotas."],["Borrar carpetas al azar",-10,-4,"Eliminaste archivos en uso."],["Comprar discos sin analizar",-2,0,"Gasto sin atacar el crecimiento."]]},
+{p:3,from:"Seguridad (alerta automática)",t:"USB encontrado en el parqueo",b:"Un empleado entregó una memoria USB sin identificar y quiere ver qué contiene.",o:[["No conectarla; analizarla en un equipo aislado (sandbox)",6,14,"Evitaste un posible ataque tipo USB drop."],["Conectarla a tu PC para revisarla rápido",4,-16,"Podrías haber ejecutado malware en la red."],["Devolvérsela al empleado",2,-10,"Trasladaste el riesgo a otra persona."]]},
+{p:2,from:"TI",t:"Parche crítico de Windows",b:"Salió una actualización de seguridad crítica para los servidores de la oficina.",o:[["Probar en preproducción y programar ventana de mantenimiento",6,12,"Parche aplicado sin interrumpir operaciones."],["Instalarlo en producción en horario laboral",-8,6,"Hubo reinicios inesperados en pleno trabajo."],["Posponerlo hasta el próximo mes",2,-12,"Dejaste una vulnerabilidad conocida abierta."]]},
+{p:1,from:"Legal",t:"Carpeta compartida con todos",b:"Un usuario compartió una carpeta de contratos con permisos para Everyone.",o:[["Quitar Everyone, aplicar grupos de AD y auditar accesos",7,12,"Permisos de mínimo privilegio aplicados."],["Dejarlo, nadie externo tiene acceso",3,-12,"Los contratos quedaron expuestos a todos los usuarios."],["Moverla sin avisar",-5,2,"Rompiste enlaces y no corregiste el permiso."]]},
+{p:1,from:"Ventas",t:"Piden acceso sin filtro a Internet",b:"Un vendedor pide que le quites el filtro web porque bloquea páginas de clientes.",o:[["Revisar las categorías bloqueadas y permitir solo los sitios legítimos",8,6,"Acceso resuelto sin abrir todo."],["Quitarle el filtro por completo",6,-14,"Amplió la superficie de ataque."],["Responder que no sin revisar",-5,0,"No evaluaste la necesidad del negocio."]]}
+];
+const TICKETS=[];const STN=[null,{name:'Marta',dept:'Contabilidad'},{name:'Luis',dept:'Operaciones'},{name:'Carlos',dept:'Ventas'},{name:'Un usuario'},{name:'la copiadora'}];
+const PRI=["#4c9a6a","#e8b04c","#c4503f"];
+const st={sat:50,sec:50,done:0,time:8*60,cur:-1,net:0,state:TICKETS.map(()=>null)};
+const END=17*60;let onsite=0;
+const G={day:1,money:0,xp:0,ups:{},ach:{},job:0,eve:0};
+try{Object.assign(G,JSON.parse(localStorage.getItem('itg1')||'{}'))}catch(e){}
+const ups=G.ups,save=()=>{try{localStorage.setItem('itg1',JSON.stringify(G))}catch(e){}};
+const $=id=>document.getElementById(id);
+const fmt=()=>{const h=Math.floor(st.time/60),m=st.time%60;return `21/01/2025  ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`};
+function hud(){$('clock').textContent=fmt();$('s1').textContent='Satisfacción '+st.sat;$('s2').textContent='Seguridad '+st.sec;$('s3').textContent=`Tickets ${st.done}/${TICKETS.length} · Red ${st.net}/3 · BIOS ${st.bios&&st.bios.done?1:0}/1${alerts()?' · ⚠ '+alerts():''}`;$('s4').textContent=`Día ${G.day} · $${G.money} · ${rank()}`;evCheck()}
+function renderList(){
+ $('list').innerHTML='';
+ TICKETS.forEach((k,i)=>{const b=document.createElement('button');b.className='tk'+(st.cur===i?' on':'')+(st.state[i]!==null?' done':'');
+  b.innerHTML=`<span class="pri" style="background:${PRI[k.p-1]}"></span><b>${k.t}</b><small>${k.from}${k.loc===4?' · Te buscará':k.loc?' · En sitio':''}</small>`;
+  b.onclick=()=>openTicket(i);$('list').appendChild(b)});
+}
+function openTicket(i){
+ st.cur=i;renderList();const k=TICKETS[i],d=$('det');
+ if(st.state[i]===null&&k.loc!==onsite){d.innerHTML=`<h2>${k.t}</h2><small>De: ${k.from}</small><p>${k.b}</p><p><b>${k.loc?(k.loc===4?'Este usuario vendrá a buscarte en persona. Recorre CAA Corp y atiéndelo cuando te encuentre.':'Este caso requiere visita en sitio: ve al puesto de '+STN[k.loc].name+'.'):'Este caso se atiende desde tu escritorio.'}</b></p>`;return}
+ if(st.state[i]!==null){d.innerHTML=`<h2>${k.t}</h2><p>Ticket cerrado.</p>`;return}
+ d.innerHTML=`<h2>${k.t}</h2><small>De: ${k.from}</small><p>${k.b}</p><div id="opts"></div><div id="fb"></div>`;
+ k.o.forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.textContent=o[0];b.onclick=()=>resolve(i,j);$('opts').appendChild(b)});
+}
+function resolve(i,j){
+ const o=TICKETS[i].o[j];st.state[i]=j;st.done++;if(seek&&seek.t===i)endSeek(true);
+ st.sat=Math.max(0,Math.min(100,st.sat+o[1]));st.sec=Math.max(0,Math.min(100,st.sec+o[2]+(ups.sec&&o[2]>0?2:0)));
+ st.time+=ups.chair?20:25;st.earn+=o[1]+o[2]>=8?30:o[1]+o[2]>=0?15:0;ach('first');beep(o[1]+o[2]>=0?880:180,.15);hud();drawScreen();drawSt();
+ const good=o[1]+o[2]>=8,fb=$('fb');
+ $('opts').style.display='none';fb.style.display='block';
+ fb.style.background=good?'#4c9a6a33':'#c4503f33';
+ fb.innerHTML=`${o[3]}<br><small>Satisfacción ${o[1]>=0?'+':''}${o[1]} · Seguridad ${o[2]>=0?'+':''}${o[2]}</small><br><button class="opt" style="width:auto;margin-top:10px" id="nx">Siguiente ticket</button>`;
+ $('nx').onclick=()=>{renderList();const n=st.state.findIndex(s=>s===null);if(st.time>=END)finish();else if(n<0){toast('Tickets cerrados. Revisa AD, Correo y Monitor o termina la jornada.');if(onsite){$('pc').style.display='none';sitting=false}else tab('ad')}else if(onsite){$('pc').style.display='none';sitting=false}else openTicket(n)};
+ renderList();
+}
+function finish(){if(st.over)return;st.over=true;if(seek){S.remove(seek.g);seek=null}$('pc').style.display='none';$('dc').style.display='none';sitting=false;
+ const pnd=st.state.filter(x=>x===null).length,down=alerts();st.sat=Math.max(0,st.sat-pnd*5);st.sec=Math.max(0,st.sec-down*5-(st.inv&&!st.inv.done?8:0));
+ const t=(st.sat+st.sec)/2,pay=Math.round(Math.max(0,100+st.earn+(t>=80?100:t>=60?40:0)-down*30-pnd*20)*JB[G.job][3]),xp=Math.round(t+st.done*5+st.net*10),r0=rank();
+ G.money=Math.max(0,G.money+pay-COST);G.xp+=xp;if(st.done)ach('first');if(t>=85)ach('perfect');if(G.day>=5)ach('week');save();const r1=rank();hud();
+ $('eh').textContent=t>=80?'Analista estrella':t>=60?'Buen desempeño':t>=40?'Necesitas práctica':'Día para el olvido';
+ $('ep').textContent=`Día ${G.day}: ${st.done}/${TICKETS.length} tickets, ${st.net}/3 trabajos de red. Satisfacción ${st.sat} · Seguridad ${st.sec}. Cobras $${pay} (+${xp} XP). Saldo: $${G.money}.`+(r1!==r0?` ¡Ascenso a ${r1}!`:` Rango: ${r1}.`)+(pnd?` Tickets sin atender: ${pnd}.`:'')+(down?` Alertas sin resolver: ${down}.`:'')+(st.inv&&!st.inv.done?' Ataque sin investigar.':'')+` Gastos de vida: $${COST}.`;
+ $('ea').textContent=Object.keys(ACH).map(k=>(G.ach[k]?'🏆 ':'🔒 ')+ACH[k][0]).join('  ·  ');
+ $('end').style.display='grid'}
+$('close').onclick=()=>{$('pc').style.display='none';sitting=false};
+
+/* ---------- ESCENA 3D ---------- */
+const cv=$('c'),R=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+R.setPixelRatio(Math.min(devicePixelRatio,2));R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
+const S=new THREE.Scene();S.background=new THREE.Color(0xd9a77f);S.fog=new THREE.Fog(0xd9a77f,10,28);
+const cam=new THREE.PerspectiveCamera(70,1,.1,50);
+const M=(c,o={})=>new THREE.MeshLambertMaterial(Object.assign({color:c,flatShading:true},o));
+function box(w,h,d,c,x,y,z,parent=S){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M(c));m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;parent.add(m);return m}
+S.add(new THREE.HemisphereLight(0xffe2c4,0x8a6a58,.75));
+const sun=new THREE.DirectionalLight(0xffc88a,.9);sun.position.set(-4,5,3);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
+Object.assign(sun.shadow.camera,{left:-6,right:6,top:6,bottom:-6});S.add(sun);
+// suelo ajedrezado
+const cc=document.createElement('canvas');cc.width=cc.height=2;const cx=cc.getContext('2d');
+cx.fillStyle='#2f6f8f';cx.fillRect(0,0,2,2);cx.fillStyle='#f3e7cf';cx.fillRect(0,0,1,1);cx.fillRect(1,1,1,1);
+const ft=new THREE.CanvasTexture(cc);ft.magFilter=THREE.NearestFilter;ft.wrapS=ft.wrapT=THREE.RepeatWrapping;ft.repeat.set(4,3);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(8,6),new THREE.MeshLambertMaterial({map:ft}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;S.add(floor);
+// paredes
+const WALL=0xf0c9a0;
+box(8,3,.2,WALL,0,1.5,-3);box(.2,3,2.1,WALL,-4,1.5,-1.95);box(.2,3,2.1,WALL,-4,1.5,1.95);box(.2,1,1.8,WALL,-4,2.5,0);box(.2,3,2.1,WALL,4,1.5,-1.95);box(.2,3,2.1,WALL,4,1.5,1.95);box(.2,1,1.8,WALL,4,2.5,0);box(8,3,.2,WALL,0,1.5,3);box(8,.2,6,0x7a5a48,0,3,0);
+// ventanas (marco + vidrio verde con árboles)
+function win(x,z,ry){const g=new THREE.Group();box(3,1.3,.12,0x111111,0,0,0,g);
+ const gl=new THREE.Mesh(new THREE.PlaneGeometry(2.7,1.05),new THREE.MeshBasicMaterial({color:0x4fa56a}));gl.position.z=.07;g.add(gl);
+ for(let i=0;i<4;i++){const b=new THREE.Mesh(new THREE.IcosahedronGeometry(.3+Math.random()*.2,0),M(0x2e8a4f));b.position.set(-1+i*.7,-.2+Math.random()*.3,.12);g.add(b)}
+ g.position.set(x,1.7,z);g.rotation.y=ry;S.add(g)}
+win(0,-2.88,0);win(-1.6,2.88,Math.PI);
+[[-1.5,0],[1.5,.3]].forEach(([x,z])=>{const m=new THREE.Mesh(new THREE.BoxGeometry(1,.04,.5),new THREE.MeshBasicMaterial({color:0xfff2d6}));m.position.set(x,2.96,z);S.add(m);const l=new THREE.PointLight(0xffe3b0,.35,7);l.position.set(x,2.7,z);S.add(l)});
+const pcl=new THREE.PointLight(0x9a6aff,.6,2.5);pcl.position.set(2,1.3,-1.6);S.add(pcl);
+const dgeo=new THREE.BufferGeometry(),dpos=new Float32Array(450);for(let i=0;i<150;i++){dpos[i*3]=-3.5+Math.random()*7;dpos[i*3+1]=.3+Math.random()*2.4;dpos[i*3+2]=-2.8+Math.random()*5.6}
+dgeo.setAttribute('position',new THREE.BufferAttribute(dpos,3));const dust=new THREE.Points(dgeo,new THREE.PointsMaterial({color:0xffe9c8,size:.025,transparent:true,opacity:.6}));S.add(dust);
+const kc=document.createElement('canvas');kc.width=kc.height=128;const kx=kc.getContext('2d'),ktex=new THREE.CanvasTexture(kc);
+const kmesh=new THREE.Mesh(new THREE.CircleGeometry(.22,24),new THREE.MeshBasicMaterial({map:ktex}));kmesh.position.set(-2.6,2.3,-2.88);S.add(kmesh);
+function drawClk(){kx.fillStyle='#f6e7d8';kx.fillRect(0,0,128,128);kx.strokeStyle='#2a2230';kx.lineWidth=6;kx.beginPath();kx.arc(64,64,58,0,7);kx.stroke();const h=st.time/60,m=st.time%60;[[h%12*30,28,6],[m*6,46,4]].forEach(([a,l,w])=>{const r=(a-90)*Math.PI/180;kx.lineWidth=w;kx.beginPath();kx.moveTo(64,64);kx.lineTo(64+Math.cos(r)*l,64+Math.sin(r)*l);kx.stroke()});ktex.needsUpdate=true}
+box(.45,.22,.35,0xdad4c8,-1.7,.85,-2.7);box(.3,.04,.2,0xffffff,-1.7,.99,-2.6);box(.35,.9,.35,0xcfe3ee,3.4,.45,2.4);box(.28,.35,.28,0x6ec1ff,3.4,1.05,2.4);box(.4,.4,.4,0x1c3fc8,-3.5,.2,2.4);box(.05,.7,.05,0x2a4a2a,-3.5,.7,2.4);
+function poster(x,y,z,l1,l2,c){const cv=document.createElement('canvas');cv.width=128;cv.height=160;const k=cv.getContext('2d');k.fillStyle=c;k.fillRect(0,0,128,160);k.fillStyle='#fff';k.font='bold 22px sans-serif';k.fillText(l1,10,60);k.fillText(l2,10,90);k.fillRect(10,110,108,6);const m=new THREE.Mesh(new THREE.PlaneGeometry(.5,.62),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv)}));m.position.set(x,y,z);S.add(m)}
+poster(3.2,1.7,-2.88,'MFA','siempre','#2f6f8f');poster(-3.45,1.6,-2.88,'NO HAGAS','CLIC','#a63b2f');
+// escritorio con PC
+const desk=new THREE.Group();desk.position.set(2,0,-1.9);S.add(desk);
+box(2.2,.07,1,0x77687a,0,.76,0,desk);box(.5,.76,.95,0x15121a,-.85,.38,0,desk);box(.5,.76,.95,0x15121a,.85,.38,0,desk);
+box(.1,.3,.05,0x222,0,.9,-.1,desk);box(.4,.02,.15,0x111,0,.8,.2,desk);
+const sc=document.createElement('canvas');sc.width=256;sc.height=160;const sx=sc.getContext('2d'),stex=new THREE.CanvasTexture(sc);
+const screen=new THREE.Mesh(new THREE.PlaneGeometry(.7,.44),new THREE.MeshBasicMaterial({map:stex}));screen.position.set(0,1.18,-.07);desk.add(screen);
+box(.74,.48,.04,0x111,0,1.18,-.1,desk);
+box(.12,.1,.1,0xff4f9a,.55,.82,.2,desk);box(.1,.1,.1,0x2a3a8a,.7,.82,.1,desk);box(.24,.015,.16,0x1a1a2a,-.6,.81,.15,desk);box(.2,.005,.12,0x5aa0ff,-.6,.82,.15,desk);box(.08,.01,.15,0x111,-.25,.81,.28,desk);box(.07,.07,.01,0xe8e04a,.4,1.4,-.07,desk);
+function drawScreen(){const g=sx.createLinearGradient(0,0,256,160);g.addColorStop(0,'#4b2a6a');g.addColorStop(1,'#241338');sx.fillStyle=g;sx.fillRect(0,0,256,160);
+ sx.fillStyle='#fff';sx.font='bold 18px sans-serif';sx.fillText('Zoho Desk',16,30);sx.font='14px sans-serif';
+ const left=st.state.filter(s=>s===null).length;sx.fillText(left+' tickets pendientes',16,60);sx.fillStyle='#e8a77c';sx.fillText('Active Directory · M365',16,90);
+ sx.fillStyle='#fff8';sx.fillText(fmt().split('  ')[1],16,140);stex.needsUpdate=true;drawClk();$('tbc').textContent=fmt()}
+// silla azul
+const chair=new THREE.Group();chair.position.set(2.4,0,-1);chair.rotation.y=-.5;S.add(chair);
+box(.6,.08,.6,0x2f5fbf,0,.5,0,chair);box(.6,.7,.08,0x2f5fbf,0,.9,.3,chair);box(.08,.5,.08,0x222,0,.25,0,chair);box(.7,.05,.1,0x222,0,.03,0,chair);box(.1,.05,.7,0x222,0,.03,0,chair);
+// mueble largo con cosas
+box(2.6,.7,.5,0xefe6d6,-1.5,.35,-2.7);box(2.6,.05,.5,0xc07a3a,-1.5,.72,-2.7);
+for(let i=0;i<6;i++)box(.5,.04,.35,[0xffffff,0x4c9a6a,0x2f6f8f,0xc4503f,0xffffff,0x4c9a6a][i],-2.2,.76+i*.045,-2.7);
+box(.3,.3,.3,0x1c3fc8,-1.1,.9,-2.7);box(.04,.5,.04,0x2a4a2a,-1.1,1.3,-2.7);box(.02,.5,.02,0x2a4a2a,-1.05,1.3,-2.72);
+box(.25,.2,.15,0x2f6fd0,-.4,.85,-2.7);
+// monitor CRT en la pared
+box(.5,.4,.45,0xb8b3a8,.6,2,-2.8);box(.4,.3,.05,0x222,.6,2,-2.55);box(.6,.04,.4,0xc07a3a,.6,1.75,-2.8);
+// estantería derecha
+box(.15,2.4,2,0xd8c7b0,3.9,1.2,2);for(let i=0;i<4;i++)box(.18,.04,2,0x6a6a6a,3.85,.5+i*.6,2);
+// persiana en techo
+box(1.5,.02,.9,0x3a2a30,1.5,2.97,-.5);
+
+// estaciones de oficina
+const SCR=[],HEADS=[];
+function station(x,z,shirt){const g=new THREE.Group();g.position.set(x,0,z);S.add(g);
+ box(1.6,.07,.8,0x8a7a8e,0,.76,0,g);box(.06,.76,.7,0x1a1620,-.72,.38,0,g);box(.06,.76,.7,0x1a1620,.72,.38,0,g);
+ const c=document.createElement('canvas');c.width=256;c.height=128;const t=new THREE.CanvasTexture(c);
+ [-.38,.38].forEach(dx=>{box(.7,.42,.04,0x111,dx,1.1,-.2,g);const m=new THREE.Mesh(new THREE.PlaneGeometry(.64,.36),new THREE.MeshBasicMaterial({map:t}));m.position.set(dx,1.1,-.17);g.add(m);box(.06,.3,.06,0x222,dx,.92,-.2,g);box(.07,.07,.01,dx<0?0xe8e04a:0x7ddc6a,dx+.33,1.28,-.17,g)});
+ box(.45,.02,.15,0x222,0,.8,.1,g);box(.1,.1,.1,0xff4f9a,.6,.82,.15,g);
+ box(.5,.08,.5,0x2f5fbf,0,.5,.9,g);box(.5,.6,.07,0x2f5fbf,0,.85,1.18,g);
+ box(.32,.5,.2,shirt,0,.85,.88,g);HEADS.push(box(.2,.2,.2,0xe0a97a,0,1.2,.88,g));box(.3,.12,.4,0x333344,0,.6,.7,g);
+ SCR.push({c,t})}
+
+function drawSt(){SCR.forEach((s,i)=>{const x=s.c.getContext('2d'),p=TICKETS.some((k,j)=>k.loc===i+1&&st.state[j]===null)||(st.bios&&st.bios.loc===i+1&&!st.bios.done);
+ x.fillStyle=p?'#8a2f2f':'#1f7f8f';x.fillRect(0,0,256,128);x.fillStyle='#fff';x.font='bold 22px sans-serif';x.fillText(STN[i+1].name,12,36);x.font='16px sans-serif';x.fillText(p?'Ticket abierto':'Sin incidencias',12,70);s.t.needsUpdate=true})}
+// pasillo y apartamento
+const HW=0xcfd3d9,AW=0xe8d9c4;
+function flo(x,w,c){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,6),new THREE.MeshLambertMaterial({color:c}));m.rotation.x=-Math.PI/2;m.position.x=x;m.receiveShadow=true;S.add(m)}
+flo(6,4,0x5a6070);flo(13,10,0xa8794a);
+box(4,3,.2,HW,6,1.5,-3);box(4,.2,6,0xb8bcc4,6,3,0);
+box(.2,3,2.1,AW,8,1.5,-1.95);box(.2,3,2.1,AW,8,1.5,1.95);box(.2,1,1.8,AW,8,2.5,0);
+box(10,3,.2,AW,13,1.5,-3);box(10,3,.2,AW,13,1.5,3);box(.2,3,6,AW,18,1.5,0);box(10,.2,6,0xf2ece0,13,3,0);
+box(.2,3,2.1,AW,14,1.5,-1.95);box(.2,3,2.1,AW,14,1.5,1.95);box(.2,1,1.8,AW,14,2.5,0);
+win(9.6,-2.88,0);win(16,-2.88,0);
+[[6,0,0xdfe8ff],[11,0,0xffe6b8],[16,0,0xffe6b8]].forEach(([x,z,c])=>{const m=new THREE.Mesh(new THREE.BoxGeometry(.8,.04,.8),new THREE.MeshBasicMaterial({color:c}));m.position.set(x,2.96,z);S.add(m);const l=new THREE.PointLight(c,.5,8);l.position.set(x,2.6,z);S.add(l)});
+// pasillo: ascensor, bancas, plantas
+box(1.8,2.2,.1,0x9aa3ad,6,1.1,-2.88);box(.03,2.2,.12,0x333,6,1.1,-2.86);box(.3,.12,.05,0x6ec1ff,6,2.45,-2.86);
+box(.5,.4,1.4,0x7a5a42,4.7,.2,-1.9);box(.5,.4,1.4,0x7a5a42,7.3,.2,-1.9);box(.4,.4,.4,0x1c3fc8,4.4,.2,-2.5);box(.05,.8,.05,0x2a4a2a,4.4,.8,-2.5);poster(7.2,1.7,-2.88,'PISO 5','Aptos','#2f6f8f');
+// sala y cocina
+box(2.2,.4,.9,0x3a7a5a,10.5,.2,.6);box(2.2,.55,.2,0x2f6a4a,10.5,.65,.15);box(.25,.3,.9,0x2f6a4a,9.35,.55,.6);box(.25,.3,.9,0x2f6a4a,11.65,.55,.6);
+const rug=new THREE.Mesh(new THREE.PlaneGeometry(3,2),new THREE.MeshLambertMaterial({color:0xb04a3a}));rug.rotation.x=-Math.PI/2;rug.position.set(10.5,.012,1.3);S.add(rug);
+{const c=document.createElement('canvas');c.width=128;c.height=72;const x=c.getContext('2d'),g=x.createLinearGradient(0,0,128,72);g.addColorStop(0,'#2a5aa0');g.addColorStop(1,'#7a2a6a');x.fillStyle=g;x.fillRect(0,0,128,72);x.fillStyle='#fff';x.font='bold 16px sans-serif';x.fillText('TV',54,42);
+ box(1.6,.9,.08,0x0a0a10,10.5,1.2,2.85);const m=new THREE.Mesh(new THREE.PlaneGeometry(1.5,.8),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}));m.position.set(10.5,1.2,2.8);m.rotation.y=Math.PI;S.add(m)}
+box(1.8,.4,.45,0x2a2a30,10.5,.2,2.65);
+box(1.8,.9,.7,0xefe6d6,12.4,.45,-2.6);box(1.9,.05,.75,0x555a62,12.4,.92,-2.6);box(1.8,.6,.35,0xc9b79c,12.4,2.1,-2.8);box(.8,1.9,.8,0xdad4c8,13.4,.95,-2.4);box(.5,.04,.5,0x333,12,.96,-2.6);
+box(1.4,.06,.9,0x8a5a2a,12.6,.75,.9);[[-.6,-.35],[.6,-.35],[-.6,.35],[.6,.35]].forEach(([a,b])=>box(.06,.72,.06,0x5a3a1a,12.6+a,.36,.9+b));
+[[12.1,1.7],[13.1,1.7],[12.1,.1],[13.1,.1]].forEach(([x,z])=>{box(.4,.05,.4,0xc07a3a,x,.48,z);box(.4,.45,.05,0xc07a3a,x,.72,z+(z>.9?.2:-.2))});
+box(.5,.18,.5,0xf0a020,12.6,.84,.9);
+box(.05,1.6,.05,0x222,8.7,.8,2.4);box(.5,.35,.5,0xffe2a8,8.7,1.7,2.4);box(.4,.4,.4,0x1c3fc8,8.6,.2,-2.4);box(.05,.8,.05,0x2a4a2a,8.6,.8,-2.4);
+// dormitorio
+box(2,.3,1.6,0x5a3a22,16.9,.15,-1.6);box(1.9,.25,1.5,0xe8e4f4,16.9,.42,-1.6);box(.5,.12,.9,0xffffff,17.5,.6,-1.6);box(1.2,.1,1.5,0x2f6f8f,16.5,.58,-1.6);
+box(.7,2.3,1.6,0x7a5a42,17.6,1.15,1.7);box(.5,.5,.5,0x8a6a4a,15.4,.25,-2.6);box(.2,.3,.2,0xffe2a8,15.4,.65,-2.6);
+box(1.6,.06,.7,0x6a6a72,15.6,.76,2.6);box(.06,.76,.6,0x222,14.85,.38,2.6);box(.06,.76,.6,0x222,16.35,.38,2.6);box(.25,.5,.5,0x181820,16.1,.3,2.4);box(.03,.4,.03,0x39ff7a,16.2,.3,2.14);
+{const c=document.createElement('canvas');c.width=128;c.height=80;const x=c.getContext('2d');x.fillStyle='#0e1b2e';x.fillRect(0,0,128,80);x.fillStyle='#39ff7a';for(let i=0;i<7;i++)x.fillRect(8,8+i*10,30+((i*37)%70),4);
+ box(.7,.42,.04,0x111,15.6,1.1,2.85);const m=new THREE.Mesh(new THREE.PlaneGeometry(.64,.36),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}));m.position.set(15.6,1.1,2.82);m.rotation.y=Math.PI;S.add(m)}
+box(.5,.05,.5,0x2f5fbf,15.6,.5,1.9);box(.5,.5,.07,0x2f5fbf,15.6,.8,1.65);
+// data center
+const dfl=new THREE.Mesh(new THREE.PlaneGeometry(8,6),new THREE.MeshLambertMaterial({color:0x1b2430}));dfl.rotation.x=-Math.PI/2;dfl.position.x=-8;dfl.receiveShadow=true;S.add(dfl);
+for(const z of[-1,1]){const m=new THREE.Mesh(new THREE.BoxGeometry(5,.03,.12),new THREE.MeshBasicMaterial({color:0x9fd0ff}));m.position.set(-8,2.95,z);S.add(m)}
+const DW=0x2a3441;box(8,3,.2,DW,-8,1.5,-3);box(8,3,.2,DW,-8,1.5,3);box(.2,3,6,DW,-12,1.5,0);box(8,.2,6,0x141a22,-8,3,0);box(8,.1,.3,0x555b66,-8,2.7,0);
+const dl=new THREE.PointLight(0x5aa0ff,.9,10);dl.position.set(-8,2.6,0);S.add(dl);
+const LEDS=[],lm=[0x39ff7a,0xffb03a,0x39ff7a,0x4aa8ff];
+for(let i=0;i<6;i++){const rg=new THREE.Group();rg.position.set(-11+i*1.2,0,-2.4);S.add(rg);box(.9,2.3,.9,0x14171d,0,1.15,0,rg);
+ for(let u=0;u<9;u++){box(.8,.14,.02,0x2c3440,0,.3+u*.22,.46,rg);for(let k=0;k<4;k++){const l=new THREE.Mesh(new THREE.BoxGeometry(.03,.03,.02),new THREE.MeshBasicMaterial({color:lm[k]}));l.position.set(-.3+k*.08,.3+u*.22,.48);rg.add(l);LEDS.push(l)}}}
+['Nexus 9300','UCS C240','Nexus 9300','ASR 1001','Catalyst 9300','Catalyst 2960 · CORE'].forEach((n,i)=>{const c=document.createElement('canvas');c.width=256;c.height=40;const x=c.getContext('2d');x.fillStyle=i===5?'#0a5f8f':'#0b2a3d';x.fillRect(0,0,256,40);x.fillStyle='#fff';x.font='bold 15px sans-serif';x.fillText('CISCO '+n,8,26);const m=new THREE.Mesh(new THREE.PlaneGeometry(.8,.125),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}));m.position.set(-11+i*1.2,2.2,-1.93);S.add(m)});
+{const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.fillStyle='#1b2430';x.fillRect(0,0,256,64);x.fillStyle='#6ec1ff';x.font='bold 26px sans-serif';x.fillText('DATA CENTER',34,42);
+ const m=new THREE.Mesh(new THREE.PlaneGeometry(.9,.22),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}));m.position.set(-3.88,2.3,0);m.rotation.y=Math.PI/2;S.add(m)}
+
+/* ---------- CONSOLA CISCO IOS ---------- */
+const PN=[];for(let i=1;i<=24;i++)PN.push('Fa0/'+i);PN.push('Gi0/1','Gi0/2');
+const FULL=k=>(k[0]==='F'?'FastEthernet':'GigabitEthernet')+k.slice(2);
+const SW={host:'Switch',secret:'',vlans:{1:'default'},ports:{},svi:{}};
+PN.forEach(k=>SW.ports[k]={mode:'access',vlan:1,shut:false,desc:''});
+const cfg=()=>JSON.stringify({h:SW.host,s:SW.secret,v:SW.vlans,p:SW.ports,i:SW.svi});
+let startup=cfg(),wrote=false,cm='user',ctx=null,hist=[],hi=0,pend=0,ji=0;
+const saved=()=>wrote&&startup===cfg();
+const P=k=>k[0]==='V'?SW.svi[+k.slice(1)]:SW.ports[k];
+const pd=(x,n)=>String(x).padEnd(n);
+const BAD=()=>{throw "% Invalid input detected at '^' marker."},INC=()=>{throw '% Incomplete command.'};
+const pick=(w,l)=>{if(!w)return null;w=w.toLowerCase();if(l.includes(w))return w;const m=l.filter(x=>x.startsWith(w));return m.length===1?m[0]:m.length>1?'?':null};
+const ipok=x=>/^(\d{1,3}\.){3}\d{1,3}$/.test(x||'')&&x.split('.').every(n=>+n<256);
+const say=t=>{const d=$('tm');d.textContent+=t+'\n';d.scrollTop=d.scrollHeight};
+const PS=()=>SW.host+({user:'>',priv:'#',cfg:'(config)#',vlan:'(config-vlan)#',if:ctx&&ctx.length>1?'(config-if-range)#':'(config-if)#'})[cm];
+const hit=(a,b,m)=>{st.sat=Math.max(0,st.sat+a);st.sec=Math.max(0,st.sec+b);hud();say(m)};
+const vname=n=>'VLAN'+String(n).padStart(4,'0');
+function parseIf(a){const s=a.join('').toLowerCase();let m;
+ if(m=s.match(/^range(?:f|fa|fastethernet)0\/(\d+)-(?:(?:f|fa|fastethernet)0\/)?(\d+)$/)){const r=[];for(let n=+m[1];n<=+m[2];n++){if(!SW.ports['Fa0/'+n])BAD();r.push('Fa0/'+n)}return r}
+ if(m=s.match(/^(?:f|fa|fastethernet)0\/(\d+)$/)){if(!SW.ports['Fa0/'+m[1]])BAD();return['Fa0/'+m[1]]}
+ if(m=s.match(/^(?:g|gi|gigabitethernet)0\/(\d+)$/)){if(!SW.ports['Gi0/'+m[1]])BAD();return['Gi0/'+m[1]]}
+ if(m=s.match(/^vlan(\d+)$/)){const n=+m[1];if(n<1||n>4094)BAD();if(!SW.svi[n])SW.svi[n]={ip:'',mask:'',shut:true};return['V'+n]}
+ BAD()}
+function run(){let t=`Building configuration...\n\nCurrent configuration : ${cfg().length} bytes\n!\nversion 15.0\n!\nhostname ${SW.host}\n!\n`;
+ if(SW.secret)t+='enable secret 5 $1$mERr$hx5rVt7rPNoS4wqbXKX7m0\n!\n';
+ for(const n in SW.vlans)if(n!=1)t+=`vlan ${n}\n name ${SW.vlans[n]}\n!\n`;
+ PN.forEach(k=>{const p=SW.ports[k];t+=`interface ${FULL(k)}\n`;if(p.desc)t+=` description ${p.desc}\n`;if(p.mode==='trunk')t+=' switchport mode trunk\n';else if(p.vlan!==1)t+=` switchport access vlan ${p.vlan}\n switchport mode access\n`;if(p.shut)t+=' shutdown\n';t+='!\n'});
+ for(const n in SW.svi){const v=SW.svi[n];t+=`interface Vlan${n}\n ${v.ip?`ip address ${v.ip} ${v.mask}`:'no ip address'}\n${v.shut?' shutdown\n':''}!\n`}
+ return t+'end'}
+function sh(a,priv){const w=pick(a[0],['running-config','vlan','ip','version','interfaces']);if(!w||w==='?')BAD();
+ if(w==='running-config'){if(!priv)BAD();say(run())}
+ else if(w==='vlan'){let t='VLAN Name                             Status    Ports\n---- -------------------------------- --------- -------------------------------\n';
+  Object.keys(SW.vlans).map(Number).sort((x,y)=>x-y).forEach(n=>{t+=pd(n,5)+pd(SW.vlans[n],33)+pd('active',10)+PN.filter(k=>SW.ports[k].mode==='access'&&SW.ports[k].vlan===n).join(', ')+'\n'});say(t)}
+ else if(w==='ip'){if(pick(a[1],['interface'])!=='interface')BAD();let t='Interface              IP-Address      OK? Method Status                Protocol\n';
+  PN.forEach(k=>{const p=SW.ports[k];t+=pd(FULL(k),23)+pd('unassigned',16)+'YES unset  '+(p.shut?pd('administratively down',22)+'down':pd('up',22)+'up')+'\n'});
+  for(const n in SW.svi){const v=SW.svi[n];t+=pd('Vlan'+n,23)+pd(v.ip||'unassigned',16)+'YES '+(v.ip?'manual ':'unset  ')+(v.shut?pd('administratively down',22)+'down':pd('up',22)+'up')+'\n'}say(t)}
+ else if(w==='interfaces'){let t='Port      Name               Status       Vlan       Duplex  Speed Type\n';PN.forEach(k=>{const p=SW.ports[k];t+=pd(k,10)+pd(p.desc.slice(0,18),19)+pd(p.shut?'disabled':'connected',13)+pd(p.mode==='trunk'?'trunk':p.vlan,11)+'a-full  a-100 10/100BaseTX\n'});say(t)}
+ else say(`Cisco IOS Software, C2960 Software (C2960-LANBASEK9-M), Version 15.0(2)SE4\n${SW.host} uptime is 2 hours, 14 minutes`)}
+function wr(){startup=cfg();wrote=true;say('Building configuration...\n[OK]')}
+function restore(){const o=JSON.parse(startup);SW.host=o.h;SW.secret=o.s;SW.vlans=o.v;SW.ports=o.p;SW.svi=o.i}
+const CMD={
+user:{enable:()=>{if(SW.secret){pend=1;$('ti').type='password';say('Password:');return}cm='priv'},show:a=>sh(a,0),exit:()=>{}},
+priv:{disable:()=>{cm='user'},exit:()=>{cm='user'},show:a=>sh(a,1),write:()=>wr(),
+ configure:a=>{if(a[0]&&!'terminal'.startsWith(a[0]))BAD();cm='cfg';say('Enter configuration commands, one per line.  End with CNTL/Z.')},
+ copy:a=>{if(a.length<2)INC();wr()},
+ erase:a=>{if(!a[0])INC();startup=JSON.stringify({h:'Switch',s:'',v:{1:'default'},p:Object.fromEntries(PN.map(k=>[k,{mode:'access',vlan:1,shut:false,desc:''}])),i:{}});wrote=false;hit(-15,-8,'[OK] Erase of nvram: complete\n¡Borraste la configuración de arranque! Al reiniciar se perderá todo.')},
+ reload:()=>{const lost=cfg()!==startup;restore();cm='user';say('Reloading...\n');if(lost)hit(-4,0,'La configuración sin guardar se perdió. Usa write memory antes de reiniciar.')}},
+cfg:{hostname:a=>{if(!a[0])INC();SW.host=a[0]},
+ vlan:a=>{const n=+a[0];if(!n||n<1||n>4094)BAD();if(!SW.vlans[n])SW.vlans[n]=vname(n);cm='vlan';ctx=n},
+ interface:a=>{ctx=parseIf(a);cm='if'},
+ enable:a=>{if(pick(a[0],['secret'])!=='secret')BAD();if(!a[1])INC();SW.secret=a.slice(1).join(' ')},
+ no:a=>{if(pick(a[0],['vlan'])!=='vlan')BAD();const n=+a[1];if(n===1)say('% Default VLAN 1 may not be deleted.');else delete SW.vlans[n]},
+ do:a=>{const c=pick(a[0],['show','write','copy']);if(!c||c==='?')BAD();return CMD.priv[c](a.slice(1))},
+ exit:()=>{cm='priv'},end:()=>{cm='priv'}},
+vlan:{name:a=>{if(!a[0])INC();SW.vlans[ctx]=a.join('_')},exit:()=>{cm='cfg'},end:()=>{cm='priv'}},
+if:{shutdown:()=>ctx.forEach(k=>P(k).shut=true),
+ no:a=>{const w=pick(a[0],['shutdown','description']);if(!w||w==='?')BAD();ctx.forEach(k=>{if(w==='shutdown')P(k).shut=false;else P(k).desc=''})},
+ description:a=>{if(!a[0])INC();ctx.forEach(k=>P(k).desc=a.join(' '))},
+ switchport:a=>{if(ctx.some(k=>k[0]==='V'))BAD();const w=pick(a[0],['mode','access']);
+  if(w==='mode'){const m=pick(a[1],['access','trunk']);if(!m||m==='?')BAD();ctx.forEach(k=>P(k).mode=m)}
+  else if(w==='access'){if(pick(a[1],['vlan'])!=='vlan')BAD();const n=+a[2];if(!n||n>4094)BAD();if(!SW.vlans[n]){SW.vlans[n]=vname(n);say('% Access VLAN does not exist. Creating vlan '+n)}ctx.forEach(k=>{P(k).vlan=n;P(k).mode='access'})}
+  else BAD()},
+ ip:a=>{if(!ctx[0].startsWith('V'))BAD();if(pick(a[0],['address'])!=='address')BAD();if(!ipok(a[1])||!ipok(a[2]))BAD();P(ctx[0]).ip=a[1];P(ctx[0]).mask=a[2]},
+ exit:()=>{cm='cfg'},end:()=>{cm='priv'}}};
+function exec(line){
+ if(pend){pend=0;$('ti').type='text';say('');if(line===SW.secret)cm='priv';else say('% Bad secrets');return}
+ say(PS()+' '+line);const t=line.trim().split(/\s+/).filter(Boolean);if(!t.length)return;
+ const tb=cm==='vlan'||cm==='if'?{...CMD.cfg,...CMD[cm]}:CMD[cm];
+ if(t[0]==='?'||t[t.length-1]==='?'){say(Object.keys(tb).join('  '));return}
+ const c=pick(t[0],Object.keys(tb));
+ if(c==='?')return say('% Ambiguous command:  "'+line.trim()+'"');
+ if(!c)return say("% Invalid input detected at '^' marker.");
+ try{const r=tb[c](t.slice(1));if(r)say(r)}catch(e){say(typeof e==='string'?e:'% Error')}}
+let JOBS=[];
+function mkJobs(d){const r=n=>(Math.random()*n)|0,V=d<2?20:[30,40,50,60,70,80][r(6)],N=d<2?'VENTAS':['RRHH','TI','VOZ','CCTV','INVITADOS','ALMACEN'][r(6)],port=d<2?5:2+r(16),H=d<2?'DC-SW1':'SUC'+d+'-SW1',a=d<2?20:6+r(10),b=a+(d<2?4:3),g=d<2?99:[99,88,77][r(3)],ip='192.168.'+g+'.2';
+ return[{t:`Segmentar la red de ${N}`,s:8,h:`vlan ${V} → name ${N} · interface fa0/${port} → switchport mode access → switchport access vlan ${V} · write memory`,g:[[`Crear la VLAN ${V} con el nombre ${N}`,()=>SW.vlans[V]===N],[`Fa0/${port} en modo access dentro de la VLAN ${V}`,()=>{const p=SW.ports['Fa0/'+port];return p.mode==='access'&&p.vlan===V}],['Guardar la configuración en NVRAM',()=>saved()]]},
+ {t:'Endurecer el switch',s:12,h:`configure terminal → hostname ${H} · enable secret <clave> · interface range fa0/${a} - ${b} → shutdown · write memory`,g:[[`Cambiar el hostname a ${H}`,()=>SW.host===H],['Definir una clave con enable secret',()=>!!SW.secret],[`Apagar los puertos sin uso Fa0/${a} a Fa0/${b}`,()=>{for(let n=a;n<=b;n++)if(!SW.ports['Fa0/'+n].shut)return false;return true}],['Guardar la configuración',()=>saved()]]},
+ {t:'Troncal y gestión',s:8,h:`interface gi0/1 → switchport mode trunk · interface vlan ${g} → ip address ${ip} 255.255.255.0 → no shutdown · write memory`,g:[['Gi0/1 como troncal (trunk)',()=>SW.ports['Gi0/1'].mode==='trunk'],[`Interfaz VLAN ${g} con IP ${ip}/24 activa`,()=>{const v=SW.svi[g];return !!v&&v.ip===ip&&v.mask==='255.255.255.0'&&!v.shut}],['Guardar la configuración',()=>saved()]]}]}
+function goals(ok=[]){const J=JOBS[ji];if(!J){$('dg').innerHTML='<b>Mantenimiento completado.</b>';return}
+ $('dg').innerHTML=`<b>Trabajo ${ji+1} de 3: ${J.t}</b>`+J.g.map((g,i)=>`<div>${ok[i]?'✔':'○'} ${g[0]}</div>`).join('')+`<small>Pista: ${J.h}</small>`}
+function ports(){const g=$('pg');g.innerHTML='';PN.forEach(k=>{const p=SW.ports[k],b=document.createElement('button');b.className='pt '+(p.shut?'bad':p.mode==='trunk'?'new':p.vlan!==1?'on':'');b.textContent=k[0]==='G'?'G'+k.slice(-1):k.slice(3);b.title=FULL(k);b.onclick=()=>{$('ti').value='interface '+k.toLowerCase();$('ti').focus()};g.appendChild(b)})}
+function chk(){const J=JOBS[ji];if(!J)return;const ok=J.g.map(g=>g[1]());goals(ok);if(!ok.every(Boolean))return;
+ ji++;st.net++;st.earn+=40;if(st.net>=3)ach('cli');st.time+=ups.ccna?15:25;st.sat=Math.min(100,st.sat+8);st.sec=Math.min(100,st.sec+J.s);wrote=false;hud();drawScreen();
+ say('\n*** Trabajo completado: '+J.t+' ***');
+ if(ji>=3){say('Mantenimiento del data center terminado. Cerrando consola...');goals()}else{say('Siguiente trabajo: '+JOBS[ji].t);goals()}
+ if(ji>=3||st.time>=END)setTimeout(()=>{closeDC();if(st.time>=END)finish()},1800)}
+function openDC(){sitting=true;$('dc').style.display='block';if(!$('tm').textContent)say('Cisco IOS Software, C2960 Software (C2960-LANBASEK9-M), Version 15.0(2)SE4\nCatalyst 2960-24TT · Switch core del data center\nEscribe ? para ver los comandos disponibles.\n');goals();ports();$('ps').textContent=PS();$('ti').focus()}
+function closeDC(){$('dc').style.display='none';sitting=false}
+$('ti').onkeydown=e=>{if(e.key==='Enter'){const v=$('ti').value;$('ti').value='';if(!pend&&v.trim())hist.push(v);hi=hist.length;exec(v);$('ps').textContent=pend?'Password:':PS();ports();chk()}
+ else if(e.key==='ArrowUp'){hi=Math.max(0,hi-1);$('ti').value=hist[hi]||'';e.preventDefault()}
+ else if(e.key==='ArrowDown'){hi=Math.min(hist.length,hi+1);$('ti').value=hist[hi]||''}};
+$('bx').onclick=closeDC;
+
+/* ---------- CONTROLES ---------- */
+let yaw=0,pitch=0,drag=false,lx=0,ly=0,sitting=false;const keys={};
+cam.position.set(-1,1.6,2);
+cam.rotation.order='YXZ';
+cv.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX;ly=e.clientY});
+addEventListener('pointerup',()=>drag=false);
+addEventListener('pointermove',e=>{if(!drag||sitting)return;yaw-=(e.clientX-lx)*.005;pitch=Math.max(-1.2,Math.min(1.2,pitch-(e.clientY-ly)*.005));lx=e.clientX;ly=e.clientY});
+addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyE')act();if(e.code==='Escape'){$('pc').style.display='none';$('dc').style.display='none';sitting=false}});
+addEventListener('keyup',e=>keys[e.code]=false);
+const ACT=[{x:2,z:-1.2,r:2.2,loc:0,l:'Sentarse en la PC (E)'},{x:11.5,z:5.8,r:1.5,loc:1},{x:-1.5,z:17.8,r:1.5,loc:2},{x:11.5,z:11.8,r:1.5,loc:3},{x:-1.9,z:11.5,r:1.6,loc:5,lc:'Revisar la copiadora (E)'},{x:10.5,z:1.7,r:1.4,home:'tv',l:'Ver TV y relajarte (E)'},{x:12.4,z:-1.4,r:1.4,home:'cook',l:'Cocinar algo (E)'},{x:15.6,z:1.7,r:1.4,home:'study',l:'Estudiar para certificación (E)'},{x:16.3,z:-.2,r:1.5,home:'sleep',l:'Dormir y empezar un nuevo día (E)'},{x:-5,z:-1.2,r:1.8,dc:1,l:'Abrir consola del switch Cisco (E)'}];
+const DK=[[2,-1.9,1.2,.6],[10.5,.4,1.3,.7],[12.6,.9,.8,.55],[12.4,-2.55,1.05,.65],[13.4,-2.4,.55,.6],[16.9,-1.6,1.25,1],[17.6,1.7,.6,1.1],[15.6,2.6,1.05,.55],[4.7,-1.9,.5,.95],[7.3,-1.9,.5,.95]];
+const WK=[[-11.5,-4.2,-1.7,2.6],[-4.35,-3.6,-.8,.8],[-3.7,3.65,-2.5,2.6],[3.5,4.5,-.8,.8],[4.4,7.7,-2.5,20.6],[7.6,8.5,-.8,.8],[8.4,13.85,-2.5,2.6],[13.6,14.5,-.8,.8],[14.4,17.6,-2.5,2.6]];
+function near(){if(sitting)return null;let b=null,bd=9;for(const a of ACT){const d=Math.hypot(cam.position.x-a.x,cam.position.z-a.z);if(d<a.r&&d<bd){b=a;bd=d}}if(seek){const d=Math.hypot(cam.position.x-seek.x,cam.position.z-seek.z);if(d<2.6&&d<bd){b=SEEKACT;bd=d}}return b}
+function label(a){if(a.seek)return seek?'Atender a '+seek.name+' (E)':null;if(a.home)return atHome&&(a.home==='sleep'||!(G.nt&&G.nt[a.home]))?a.l:null;if(a.dc)return st.net<3?a.l:null;if(a.lc)return TICKETS.some((k,i)=>k.loc===a.loc&&st.state[i]===null)?a.lc:null;if(a.l)return a.l;return (TICKETS.some((k,i)=>k.loc===a.loc&&st.state[i]===null)||(st.bios&&st.bios.loc===a.loc&&!st.bios.done))?`Atender a ${STN[a.loc].name} en sitio (E)`:null}
+function act(){const a=near();if(!a)return;if(a.home){if(label(a))homeAct(a.home);return}if(st.time>=END||!label(a))return;if(a.dc)return openDC();sit(a)}
+function sit(a){sitting=true;onsite=a.loc;tabsVis();$('endday').style.display=onsite?'none':'';tab('t');$('pc').style.display='block';renderList();const n=a.seek?seek.t:st.state.findIndex((s,i)=>s===null&&TICKETS[i].loc===onsite);if(n<0&&st.bios&&st.bios.loc===onsite&&!st.bios.done)tab('bios');else openTicket(n>=0?n:st.state.findIndex(s=>s===null))}
+$('use').onclick=act;
+function resize(){R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();
+
+/* ---------- SISTEMA DE JUEGO ---------- */
+const RANKS=['Becario','Soporte N1','Soporte N2','Administrador de sistemas','Ingeniero de redes','Jefe de TI'],TH=[0,150,350,650,1000,1500];
+const ri=()=>{let r=0;TH.forEach((x,i)=>{if(G.xp>=x)r=i});return r},rank=()=>RANKS[ri()];const COST=60;
+const ACH={soc:['Cazador de amenazas'],bios:['Técnico de hardware'],first:['Primer ticket'],mail:['Ojo de halcón'],cli:['Maestro del CLI'],perfect:['Día perfecto'],shop:['Inversión'],week:['Semana completa'],ad:['Guardián del dominio']};
+let tt,AC=null,mute=false;
+function toast(t,ms=3200){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(tt);tt=setTimeout(()=>e.style.display='none',ms)}
+function beep(f=520,d=.08,ty='square'){if(mute)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=ty;o.frequency.value=f;g.gain.value=.04;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.stop(AC.currentTime+d)}catch(e){}}
+function ach(k){if(G.ach[k])return;G.ach[k]=1;save();toast('🏆 Logro: '+ACH[k][0]);beep(990,.2)}
+const bump=(a,b,m)=>{st.sat=Math.max(0,Math.min(100,st.sat+a));st.sec=Math.max(0,Math.min(100,st.sec+b));hud();toast(m)};
+const adv=m=>{st.time+=m;hud();drawScreen();if(st.time>=END)finish()};
+const alerts=()=>st.ev?st.ev.filter(e=>e.fired&&!e.done).length:0;
+const USERS=[['mgarcia','Marta García','Contabilidad'],['lperez','Luis Pérez','Operaciones'],['cruiz','Carlos Ruiz','Ventas'],['sfernandez','Sofía Fernández','Legal'],['arodriguez','Andrea Rodríguez','RRHH'],['jtorres','Jorge Torres','Ventas'],['pmendez','Patricia Méndez','Contabilidad'],['dvega','Daniel Vega','TI']];
+const MT=[['soporte@micr0soft-365.com','Su cuenta será suspendida','Verifique su cuenta en 24 horas: http://bit.ly/m365-verif',true,'Dominio con un cero y enlace acortado.'],
+['rrhh@caacorp.com.pa','Recordatorio de vacaciones','Recuerden registrar sus vacaciones en el portal interno.',false,'Dominio corporativo y sin enlaces sospechosos.'],
+['ceo@caa-corp.net','Transferencia urgente','Necesito que pagues $8,500 hoy y no lo comentes con nadie.',true,'Fraude del CEO: urgencia, secreto y dominio distinto.'],
+['noreply@zoho.com','Tu ticket fue actualizado','Hay un nuevo comentario en el ticket #4821.',false,'Dominio oficial y notificación esperada.'],
+['facturas@proveedor-pa.co','Factura vencida.zip','Adjunto factura. Abra el archivo para ver los detalles.',true,'ZIP inesperado de un remitente desconocido.'],
+['it@caacorp.com.pa','Mantenimiento programado','Sábado 10 pm: mantenimiento de servidores. No requiere acción.',false,'Remitente interno y aviso informativo.'],
+['seguridad@banco-panama-alerta.com','Actividad inusual en su cuenta','Confirme su clave aquí: https://banco-pa.verify-login.ru',true,'Dominio .ru y pide credenciales.'],
+['gerencia@caacorp.com.pa','Agenda de la reunión','Adjunto la agenda; está en el SharePoint de la empresa.',false,'Interno, esperado y sin pedir datos.']];
+const DEV=[['Firewall perimetral','Enlace WAN principal caído',1],['Switch core Cisco','CPU al 99% por un servicio colgado',0],['Controlador de dominio','Servicio Kerberos detenido',0],['Servidor Zoho','Licencia del proveedor expirada',2],['NAS de respaldo','Disco con falla y garantía vigente',2],['Portal VPN','Servicio colgado sin conexiones',0]];
+const MA=['Reiniciar servicio','Cambiar a respaldo','Escalar al proveedor'];
+const SHOP=[['chair','Silla ergonómica','Cada ticket cuesta 5 minutos menos.',300],['sec','Curso Security+','+2 de seguridad en decisiones acertadas.',450],['ccna','Curso CCNA','Los trabajos del switch cuestan 10 minutos menos.',600],['coffee','Café de especialidad','Empiezas cada día con +10 de satisfacción.',150]];
+const TABS=[['t','Tickets'],['cmd','Terminal'],['ev','Eventos'],['ad','Active Directory'],['mail','Correo'],['mon','Monitor'],['mfa','Tablet'],['jobs','Empleos'],['shop','Tienda'],['bios','BIOS']];
+function tab(k){$('win').dataset.tab=k;$('tabs').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));({ad:drawAD,mail:drawMail,mon:drawMon,shop:drawShop,cmd:drawCmd,ev:drawEv,mfa:drawMfa,jobs:drawJobs,bios:drawBios})[k]?.()}
+function tabsVis(){$('tabs').querySelectorAll('button').forEach(b=>b.style.display=(onsite?['t','bios'].includes(b.dataset.k):b.dataset.k!=='bios')?'':'none')}
+function drawAD(){$('app').innerHTML=`<h3>Active Directory — Usuarios y equipos</h3><div class="tk2">${st.adt.map(t=>`<div>${t.done?'✔':'○'} ${t.txt}</div>`).join('')}</div><table><tr><th>Usuario</th><th>Departamento</th><th>Estado</th><th></th></tr>${USERS.map((u,i)=>{const s=st.ad[i];return `<tr><td>${u[1]}<small>${u[0]}</small></td><td>${u[2]}</td><td>${s.off?'Deshabilitada':s.lock?'🔒 Bloqueada':'Activa'}${s.ex?'<small>Baja reportada por RRHH</small>':''}</td><td><button data-a="ad:${i}:unlock">Desbloquear</button><button data-a="ad:${i}:reset">Restablecer clave</button><button data-a="ad:${i}:${s.off?'on':'off'}">${s.off?'Habilitar':'Deshabilitar'}</button></td></tr>`}).join('')}</table>`}
+function adAct(i,a){const u=st.ad[i],n=USERS[i][1];
+ if(a==='unlock'){if(!u.lock){toast(n+' no estaba bloqueada');return}u.lock=false;bump(1,1,'Cuenta de '+n+' desbloqueada');adv(10)}
+ else if(a==='reset'){if(u.ex)bump(0,-6,'Restableciste la clave de un ex empleado: riesgo de acceso indebido');else toast('Clave temporal enviada a '+n+' por canal verificado');adv(5)}
+ else if(a==='off'){u.off=true;if(u.ex)bump(0,6,n+' deshabilitado');else bump(-10,0,'¡Deshabilitaste a un empleado activo!');adv(10)}
+ else if(a==='on'){u.off=false;toast('Cuenta habilitada de nuevo');adv(5)}
+ const t=st.adt.find(t=>t.u===i&&!t.done&&((t.k==='unlock'&&!u.lock)||(t.k==='disable'&&u.off)));if(t){t.done=true;st.earn+=20;beep(880,.1);if(st.adt.every(x=>x.done))ach('ad')}
+ drawAD()}
+function drawMail(){$('app').innerHTML='<h3>Bandeja de entrada</h3>'+st.mail.map((x,i)=>`<div class="mail"><b>${x.m[1]}</b><small>De: ${x.m[0]}</small><p>${x.m[2]}</p>${x.a===null?`<button data-a="mail:${i}:l">Es legítimo</button><button data-a="mail:${i}:p">Es phishing</button>`:`<em>${x.m[3]?'Phishing':'Legítimo'}: ${x.m[4]} ${x.a===x.m[3]?'✔':'✘'}</em>`}</div>`).join('')}
+function mailAct(i,v){const x=st.mail[i];if(x.a!==null)return;x.a=v==='p';
+ if(x.a===x.m[3]){bump(0,3,'✔ Correcto');st.earn+=5}else if(x.m[3])bump(0,-8,'✘ Era phishing: un usuario podría hacer clic');else bump(-3,0,'✘ Era legítimo: bloqueaste un correo válido');
+ adv(5);if(st.mail.every(y=>y.a===y.m[3]))ach('mail');drawMail()}
+function drawMon(){$('app').innerHTML='<h3>Monitor de red</h3><div class="grid">'+DEV.map((d,i)=>{const dn=st.dev[i]==='down';return `<div class="card ${dn?'dn':''}"><b>${d[0]}</b><span>${dn?'● CAÍDO':'● En línea'}</span>${dn?`<small>${d[1]}</small>`+MA.map((m,k)=>`<button data-a="mon:${i}:${k}">${m}</button>`).join(''):''}</div>`}).join('')+'</div>'}
+function monAct(i,a){const e=st.ev.find(x=>x.d===+i&&x.fired&&!x.done);if(!e)return;
+ if(+a===DEV[i][2]){e.done=true;st.dev[i]='ok';st.earn+=25;bump(0,5,'✔ '+DEV[i][0]+' restablecido')}else bump(-3,0,'Esa acción no resolvió el problema');
+ adv(15);drawMon()}
+function drawShop(){$('app').innerHTML=`<h3>Tienda de TI</h3><p>Saldo: <b>$${G.money}</b> · cobras al terminar cada jornada.</p>`+SHOP.map(s=>`<div class="mail"><b>${s[1]}</b> — $${s[3]}<p>${s[2]}</p>${ups[s[0]]?'<em>Comprado ✔</em>':`<button data-a="shop:${s[0]}">Comprar</button>`}</div>`).join('')}
+function buy(k){const s=SHOP.find(x=>x[0]===k);if(!s||ups[k])return;if(G.money<s[3]){toast('Saldo insuficiente');return}G.money-=s[3];ups[k]=1;save();ach('shop');hud();toast('Compraste: '+s[1]);drawShop()}
+function evCheck(){if(!st.ev)return;st.ev.forEach(e=>{if(!e.fired&&st.time>=e.t){e.fired=true;st.dev[e.d]='down';toast('⚠ ALERTA: '+DEV[e.d][0]+' sin respuesta');beep(220,.3,'sawtooth')}})}
+$('tabs').innerHTML=TABS.map(t=>`<button data-k="${t[0]}">${t[1]}</button>`).join('');
+$('tabs').onclick=e=>{const b=e.target.closest('button');if(b)tab(b.dataset.k)};
+$('app').onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;const[k,x,y]=b.dataset.a.split(':');({ad:adAct,mail:mailAct,mon:monAct,shop:buy,ev:evAct,mfa:mfaAct,jobs:jobAct,bios:biosAct})[k](x,y)};
+$('endday').onclick=finish;
+$('snd').onclick=()=>{mute=!mute;$('snd').textContent=mute?'🔇':'🔊'};
+$('gh').onclick=goHome;
+$('rs').onclick=()=>{if(!$('rs').dataset.s){$('rs').dataset.s=1;$('rs').textContent='¿Seguro? Pulsa otra vez';return}try{localStorage.removeItem('itg1')}catch(e){}location.reload()};
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('button'))beep(600,.04)});
+document.querySelectorAll('#joy button').forEach(b=>{const k=b.dataset.k;b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true});['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>keys[k]=false))});
+const JB=[['Asistente de TI','Oficina local',0,1],['Analista de Soporte N2','Banco del Istmo',2,1.25],['Administrador de Sistemas','Logística Canal',3,1.5],['Ingeniero de Redes Cisco','Telecomunicaciones PA',4,1.9],['Analista SOC','Ciberseguridad PA',4,2],['Jefe de TI','Corporación Zona Libre',5,2.6]];
+function drawJobs(){$('app').innerHTML=`<h3>Bolsa de empleo</h3><p>Rango actual: <b>${rank()}</b> · Puesto: <b>${JB[G.job][0]}</b> (sueldo x${JB[G.job][3]})</p>`+JB.map((j,i)=>`<div class="mail"><b>${j[0]}</b> — ${j[1]}<small>Requiere rango: ${RANKS[j[2]]} · Sueldo x${j[3]}</small>${G.job===i?'<em>Puesto actual ✔</em>':ri()>=j[2]?`<button data-a="jobs:${i}">Aplicar</button>`:'<em>Rango insuficiente</em>'}</div>`).join('')}
+function jobAct(i){G.job=+i;save();hud();toast('¡Nuevo puesto: '+JB[i][0]+'!');beep(990,.2);drawJobs()}
+function drawEv(){$('app').innerHTML=`<h3>Visor de eventos — Registro de seguridad</h3><div class="tk2">${st.inv.done?'✔ Ataque contenido: IP bloqueada en el firewall.':'⚠ Alerta del SIEM: intentos de inicio de sesión fallidos fuera de horario. Identifica la IP responsable y bloquéala.'}</div><table><tr><th>Hora</th><th>Nivel</th><th>Id</th><th>Usuario</th><th>IP origen</th><th></th></tr>${st.evl.map((e,i)=>`<tr><td>${e.t}</td><td>${e.lv}</td><td>${e.id}</td><td>${e.u}</td><td>${e.ip}</td><td>${st.inv.done?'':`<button data-a="ev:${i}">Bloquear IP</button>`}</td></tr>`).join('')}</table>`}
+function evAct(i){const e=st.evl[i];if(st.inv.done)return;if(e.ip===st.inv.ip){st.inv.done=true;st.earn+=40;bump(2,10,'✔ IP atacante '+e.ip+' bloqueada; fuerza bruta detenida');ach('soc')}else bump(-10,-2,'Bloqueaste una IP interna legítima: '+e.ip);adv(10);drawEv()}
+const HOSTS={'dc01':['192.168.10.10',2],'zoho.local':['192.168.10.20',3],'nas01':['192.168.10.30',4],'vpn.caacorp.com':['192.168.10.40',5],'firewall':['192.168.10.1',0],'google.com':['142.250.78.14',-1]};
+function drawCmd(){$('app').innerHTML='<h3>Símbolo del sistema</h3><div id="co"></div><label id="cl"><span>C:\\Users\\soporte&gt;</span><input id="ci" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Comando"></label>';
+ if(!st.cmdout)st.cmdout='Microsoft Windows [Versión 10.0.19045]\n(c) Microsoft Corporation. Todos los derechos reservados.\nEscribe help para ver los comandos.\n';$('co').textContent=st.cmdout;$('ci').focus();$('ci').onkeydown=e=>{if(e.key==='Enter'){const v=e.target.value;e.target.value='';cmdRun(v)}}}
+function cmdRun(v){const o=$('co'),w=v.trim().split(/\s+/),c=(w[0]||'').toLowerCase();let r='';
+ if(c==='help')r='Comandos: help, cls, ipconfig, ping <host>, nslookup <host>, whoami, hostname, netstat, ver\nHosts: dc01, zoho.local, nas01, vpn.caacorp.com, firewall, google.com o una IP';
+ else if(c==='cls'){st.cmdout='';o.textContent='';return}
+ else if(c==='ipconfig')r='Adaptador Ethernet:\n   Dirección IPv4. . . . : 192.168.10.55\n   Máscara de subred . . : 255.255.255.0\n   Puerta de enlace . . : 192.168.10.1';
+ else if(c==='whoami')r='caacorp\\soporte';else if(c==='hostname')r='PC-SOPORTE01';else if(c==='ver')r='Microsoft Windows [Versión 10.0.19045]';
+ else if(c==='netstat')r='  Proto  Local                 Remoto                Estado\n  TCP    192.168.10.55:50321   192.168.10.20:443     ESTABLISHED\n  TCP    192.168.10.55:50788   192.168.10.10:389     ESTABLISHED';
+ else if(c==='nslookup'||c==='ping'){const h=(w[1]||'').toLowerCase();if(!h)r='Uso: '+c+' <host>';else{const e=HOSTS[h],ip=e?e[0]:/^\d+\.\d+\.\d+\.\d+$/.test(h)?h:null;
+  if(!ip)r=c==='ping'?'La solicitud de ping no pudo encontrar el host '+h+'.':'*** No se encontró '+h;
+  else if(c==='nslookup')r='Servidor: dc01\nAddress: 192.168.10.10\n\nNombre: '+h+'\nAddress: '+ip;
+  else{const dn=e&&e[1]>=0&&st.dev[e[1]]==='down',sv=Object.values(SW.svi).some(x=>x.ip===ip&&!x.shut),ok=!dn&&(e||sv);
+   r=`Haciendo ping a ${h} [${ip}] con 32 bytes de datos:\n`+(ok?[0,1,2,3].map(()=>`Respuesta desde ${ip}: bytes=32 tiempo=${1+((Math.random()*8)|0)}ms TTL=64`).join('\n')+'\n\nPaquetes: enviados=4, recibidos=4, perdidos=0 (0% perdidos)':[0,1,2,3].map(()=>'Tiempo de espera agotado.').join('\n')+'\n\nPaquetes: enviados=4, recibidos=0, perdidos=4 (100% perdidos)')}}}
+ else if(c)r=`'${c}' no se reconoce como un comando interno o externo.`;
+ st.cmdout+='C:\\Users\\soporte>'+v+'\n'+r+'\n';o.textContent=st.cmdout;o.scrollTop=o.scrollHeight}
+const mfaCode=o=>String(100000+(((Math.floor(Date.now()/15000)-o)*2654435761>>>0)%900000));
+function drawMfa(){$('app').innerHTML=`<h3>Tablet · Authenticator</h3><div class="card" style="max-width:340px;background:#3a3f9a;color:#fff"><small>Administrador VPN · caacorp.com</small><div id="mc" style="font-size:36px;letter-spacing:6px;font-weight:700;margin:8px 0">${mfaCode(0)}</div><small id="mt"></small></div><h3 style="margin-top:18px">Portal VPN — acceso de administrador</h3><p>Inicios pendientes: <b>${3-st.mfa}</b>. Ingresa el código de 6 dígitos de la tablet.</p><input id="mi" inputmode="numeric" maxlength="6" style="padding:8px;font-size:18px;width:140px"> <button data-a="mfa:go">Verificar</button>`;mfaTick()}
+function mfaTick(){const c=$('mc');if(!c||$('win').dataset.tab!=='mfa')return;c.textContent=mfaCode(0);$('mt').textContent='Caduca en '+(15-Math.floor((Date.now()/1000)%15))+' s'}
+setInterval(mfaTick,1000);
+function mfaAct(){if(st.mfa>=3){toast('No hay más inicios pendientes');return}const v=$('mi').value.trim();if(v===mfaCode(0)||v===mfaCode(1)){st.mfa++;st.earn+=10;bump(1,3,'✔ Acceso verificado con MFA');adv(5)}else bump(0,-3,'✘ Código incorrecto o caducado');drawMfa()}
+function drawBios(){const b=st.bios;if(!b||b.loc!==onsite){$('app').innerHTML='<h3>BIOS</h3><p>Esta estación no reporta problemas de arranque.</p>';return}
+ if(b.done){$('app').innerHTML='<h3>BIOS</h3><p>La PC arrancó correctamente. ✔</p>';return}
+ const P=['Main','Advanced','Security','Boot','Exit'],c=b.cfg,pg=b.page,row=(l,v,k)=>`<div class="br"><span>${l}</span><button data-a="bios:t:${k}">${v}</button></div>`;
+ $('app').innerHTML=`<div class="bios"><div class="bm">${P.map(p=>`<button data-a="bios:p:${p}" class="${p===pg?'on':''}">${p}</button>`).join('')}</div><div class="bb">`+
+ (pg==='Main'?'<p>Sistema: equipo de usuario<br>BIOS: v1.4.2<br>Estado: no arranca el sistema operativo</p><p>Objetivo: Secure Boot y TPM habilitados y SSD como primer dispositivo de arranque. Guarda y sal (Exit).</p>':
+  pg==='Advanced'?'<p>CPU Configuration<br>SATA Configuration<br>USB Configuration<br>Network Stack Configuration</p>':
+  pg==='Security'?row('Secure Boot',c.sb,'sb')+row('TPM Device',c.tpm,'tpm'):
+  pg==='Boot'?row('Boot Option #1',c.boot,'boot'):
+  '<button data-a="bios:s:1">Save Changes and Exit</button><button data-a="bios:s:0">Discard Changes and Exit</button>')+'</div></div>'}
+function biosAct(x,y){const b=st.bios;if(!b||b.done)return;
+ if(x==='p')b.page=y;
+ else if(x==='t'){const o={boot:['USB Drive','Network','SSD'],sb:['Disabled','Enabled'],tpm:['Disabled','Enabled']}[y];b.cfg[y]=o[(o.indexOf(b.cfg[y])+1)%o.length]}
+ else if(x==='s'){if(y==='1'){const c=b.cfg;if(c.boot==='SSD'&&c.sb==='Enabled'&&c.tpm==='Enabled'){b.done=true;st.earn+=40;bump(8,8,'✔ La PC arrancó con Secure Boot y TPM activos');ach('bios');adv(20);drawSt()}else{bump(-3,0,'La PC sigue sin arrancar: revisa Boot, Secure Boot y TPM');adv(10)}}else{b.cfg={boot:'USB Drive',sb:'Disabled',tpm:'Disabled'};toast('Cambios descartados')}}
+ drawBios()}
+/* ---------- CAA CORP: DEPARTAMENTOS Y USUARIOS ---------- */
+const free=(x,z)=>{for(const d of DK)if(Math.abs(x-d[0])<d[2]&&Math.abs(z-d[1])<d[3])return false;return WK.some(r=>x>r[0]&&x<r[1]&&z>r[2]&&z<r[3])};
+const clear=(x0,z0,x1,z1)=>{const n=Math.ceil(Math.hypot(x1-x0,z1-z0)/.3);for(let i=0;i<=n;i++)if(!free(x0+(x1-x0)*i/n,z0+(z1-z0)*i/n))return false;return true};
+function fb(w,h,d,c,x,y,z){DK.push([x,z,w/2+.25,d/2+.25]);return box(w,h,d,c,x,y,z)}
+function fl(x0,x1,z0,z1,c){const m=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,z1-z0),new THREE.MeshLambertMaterial({color:c}));m.rotation.x=-Math.PI/2;m.position.set((x0+x1)/2,.01,(z0+z1)/2);m.receiveShadow=true;S.add(m)}
+function wX(x,z0,z1,gs){let a=z0;gs.concat([z1+1]).forEach(g=>{const e=g>z1?z1:g-.9;if(e>a)box(.2,3,e-a,0xeee6d8,x,1.5,(a+e)/2);if(g<=z1){box(.2,1,1.8,0xeee6d8,x,2.5,g);a=g+.9}})}
+const wZ=(z,x0,x1)=>box(x1-x0,3,.2,0xeee6d8,(x0+x1)/2,1.5,z);
+function lamp(x,z){const m=new THREE.Mesh(new THREE.BoxGeometry(1,.04,.6),new THREE.MeshBasicMaterial({color:0xfff2d6}));m.position.set(x,2.96,z);S.add(m)}
+function sgn(x,y,z,ry,t,c){const cv=document.createElement('canvas');cv.width=256;cv.height=64;const k=cv.getContext('2d');k.fillStyle=c;k.fillRect(0,0,256,64);k.fillStyle='#fff';k.font='bold 22px sans-serif';k.textAlign='center';k.fillText(t,128,40);const m=new THREE.Mesh(new THREE.PlaneGeometry(1.1,.28),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv)}));m.position.set(x,y,z);m.rotation.y=ry;S.add(m)}
+function logo(x,y,z,ry,w){const cv=document.createElement('canvas');cv.width=256;cv.height=96;const k=cv.getContext('2d');k.fillStyle='#0b2a4a';k.fillRect(0,0,256,96);k.fillStyle='#ff9a1f';k.font='bold 52px sans-serif';k.textAlign='center';k.fillText('CAA',100,62);k.fillStyle='#fff';k.font='bold 34px sans-serif';k.fillText('CORP',200,62);k.fillRect(20,76,216,5);const m=new THREE.Mesh(new THREE.PlaneGeometry(w,w*.375),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv)}));m.position.set(x,y,z);m.rotation.y=ry;S.add(m)}
+const TEAL=new THREE.MeshBasicMaterial({color:0x3aa7b5});
+function d2(x,z,sh){box(1.4,.07,.7,0x8a7a8e,x,.76,z);box(.05,.76,.6,0x1a1620,x-.65,.38,z);box(.05,.76,.6,0x1a1620,x+.65,.38,z);box(.5,.35,.04,0x111,x,1.08,z-.2);const m=new THREE.Mesh(new THREE.PlaneGeometry(.46,.3),TEAL);m.position.set(x,1.08,z-.17);S.add(m);box(.4,.02,.14,0x222,x,.8,z+.1);
+ box(.45,.07,.45,0x2f5fbf,x,.5,z+.85);box(.45,.5,.06,0x2f5fbf,x,.8,z+1.1);box(.3,.45,.18,sh,x,.82,z+.82);HEADS.push(box(.19,.19,.19,0xe0a97a,x,1.18,z+.82));DK.push([x,z,.9,.55])}
+const RM=[[-4,4,3,9,'RECURSOS HUMANOS',0xb59ac4,0x8a3fa0],[-4,4,9,15,'CENTRO DE COPIADO',0x9aa6b0,0x1f7f8f],[-4,4,15,21,'OPERACIONES',0x8b7d6a,0x8a6a2a],[8,16,3,9,'CONTABILIDAD',0x9ab59a,0x2f7a4a],[8,16,9,15,'VENTAS',0xc4a46a,0xc0502a],[8,16,15,21,'GERENCIA',0x6a4a3a,0x0b2a4a]];
+fl(4,8,3,21,0x5a6070);box(4,.2,18,0xb8bcc4,6,3,12);[6,12,18].forEach(z=>lamp(6,z));
+RM.forEach(([x0,x1,z0,z1,n,fc,sc])=>{const cx=(x0+x1)/2,cz=(z0+z1)/2,w=x0<0;fl(x0,x1,z0,z1,fc);box(8,.2,6,0xf2ece0,cx,3,cz);lamp(cx,cz);sgn(w?4.11:7.89,2.55,cz,w?Math.PI/2:-Math.PI/2,n,sc)});
+wX(4,3,21,[6,12,18]);wX(-4,3,21,[]);wX(8,3,21,[6,12,18]);wX(16,3,21,[]);wZ(9,-4,4);wZ(15,-4,4);wZ(9,8,16);wZ(15,8,16);wZ(21,-4,16);
+[6,12,18].forEach(g=>{WK.push([3.5,4.5,g-.8,g+.8],[7.5,8.5,g-.8,g+.8]);[[-3.7,3.65],[8.4,15.6]].forEach(([a,b])=>WK.push([a,b,g-2.5,g+2.5]))});
+const cl=new THREE.PointLight(0xdfe8ff,.6,16);cl.position.set(6,2.6,12);S.add(cl);
+logo(6,1.9,20.88,Math.PI,2.8);logo(7.88,1.7,-2.1,-Math.PI/2,1.6);logo(1.8,1.8,2.88,Math.PI,1.6);sgn(-1.2,2.1,2.88,Math.PI,'TICKETS PENDIENTES','#2f6f8f');
+fb(.35,.9,.35,0xcfe3ee,7.6,.45,3.8);box(.28,.35,.28,0x6ec1ff,7.6,1.05,3.8);box(.4,.4,.4,0x1c3fc8,4.6,.2,9);box(.05,.7,.05,0x2a4a2a,4.6,.7,9);box(.4,.4,.4,0x1c3fc8,7.5,.2,15);box(.05,.7,.05,0x2a4a2a,7.5,.7,15);
+fb(1.8,.08,.9,0x8a7a8e,-1.2,.75,.3);[[-1.2,-.6],[-1.2,1.2],[-2.2,.3]].forEach(([x,z])=>box(.4,.45,.4,0x2f5fbf,x,.25,z));
+// RRHH
+d2(-2.4,4.3,0xd05a7a);d2(.4,4.3,0x4c7ad0);fb(.5,1.5,.9,0x8a9aa8,-3.6,.75,5.7);fb(.5,1.5,.9,0x8a9aa8,-3.6,.75,6.8);
+fb(1.4,.08,1.4,0x8a5a2a,1.8,.75,7.6);[[1.8,6.6],[1.8,8.6],[.8,7.6]].forEach(([x,z])=>box(.4,.45,.4,0x8a3fa0,x,.25,z));poster(-.9,1.7,3.12,'RRHH','Bienvenid@','#8a3fa0');poster(2.4,1.7,3.12,'CAA','Valores','#0b2a4a');fb(.4,.4,.4,0x1c3fc8,-3.4,.2,8.4);
+// Copiado
+fb(1.1,1.1,.7,0xdad4c8,-2.6,.55,10.2);fb(1.1,1.1,.7,0xdad4c8,-1.2,.55,10.2);box(.45,.06,.25,0x2f6f8f,-2.6,1.14,10.15);box(.45,.06,.25,0x2f6f8f,-1.2,1.14,10.15);box(.5,.04,.3,0xffffff,-2.6,.95,10.65);
+fb(1.6,.9,.6,0xcfd4da,1.4,.45,10.2);box(1.4,.05,.5,0x2a2a30,1.4,.93,10.2);fb(2.2,.8,.8,0x8a8a92,.2,.4,13.9);for(let i=0;i<4;i++)box(.4,.1,.3,0xffffff,-.4+i*.5,.85,13.9);
+fb(.45,.7,.4,0x333,-3.4,.35,13.6);poster(2.8,1.7,9.12,'COPIAS','e impresión','#1f7f8f');
+// Operaciones
+fb(.6,2,3,0x7a6a5a,-3.55,1,17.4);for(let i=0;i<3;i++)box(.4,.4,.8,0xb98b5a,-3.45,.5+i*.7,16.7+i*.5);fb(.8,.8,.8,0xb98b5a,2.8,.4,19.5);box(.7,.6,.7,0xc99b6a,2.9,1.1,19.5);
+// estaciones con usuario (Marta, Luis, Carlos)
+station(11.5,4.4,0xd05a7a);station(-1.5,16.4,0x4c7ad0);station(11.5,10.4,0x6a9a4c);DK.push([11.5,4.4,1,.7],[-1.5,16.4,1,.7],[11.5,10.4,1,.7]);
+// Contabilidad
+d2(14.2,4.4,0x8a5ac0);fb(.9,1,.9,0x444,15.2,.5,7.8);box(.3,.02,.2,0xffd34a,15.2,1.02,7.8);fb(.5,1.5,.9,0x8a9aa8,15.6,.75,5.7);poster(9.2,1.7,3.12,'FINANZAS','Cierre de mes','#2f7a4a');
+// Ventas
+d2(14.2,10.4,0xe8a03a);box(2.4,1.3,.05,0xf4f4f4,12.8,1.7,9.12);box(2,.05,.03,0xc0502a,12.8,1.9,9.15);box(1.6,.05,.03,0x2f6f8f,12.8,1.6,9.15);fb(.9,.8,.4,0x8a5a2a,9,.4,13.6);box(.15,.3,.15,0xffc83a,9,.95,13.6);poster(9.2,1.7,9.12,'VENTAS','Meta x2','#c0502a');
+// Gerencia
+fb(2.4,.08,1.1,0x3a2a1a,12.5,.78,17.2);box(.1,.76,1,0x2a1a0a,11.4,.38,17.2);box(.1,.76,1,0x2a1a0a,13.6,.38,17.2);box(.6,.4,.04,0x111,12.5,1.12,17);box(.6,.1,.6,0x1a1a1a,12.5,.5,18.1);box(.6,.8,.1,0x1a1a1a,12.5,.95,18.4);
+fb(.4,2.2,3,0x5a3a22,15.6,1.1,18.2);for(let i=0;i<5;i++)box(.3,.3,.4,[0x2f6f8f,0xc0502a,0x4c9a6a,0xe8a03a,0x8a3fa0][i],15.55,.6+i*.4,17+i*.5);fb(2,.4,.8,0x3a3a4a,10,.2,20.3);box(2,.5,.15,0x3a3a4a,10,.6,20.65);
+// ---- usuarios que te buscan ----
+const SEEKACT={seek:1,loc:4};let seek=null,seekAt=0;
+function label3d(t){const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.fillStyle='#101923cc';x.fillRect(0,0,256,64);x.fillStyle='#fff';x.font='bold 28px sans-serif';x.textAlign='center';x.fillText(t,128,42);const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c)}));sp.scale.set(1.1,.28,1);return sp}
+function mkPerson(c,name){const g=new THREE.Group();box(.34,.62,.22,c,0,.95,0,g);box(.12,.6,.14,0x2a2a3a,-.09,.3,0,g);box(.12,.6,.14,0x2a2a3a,.09,.3,0,g);box(.22,.22,.22,0xe0a97a,0,1.42,0,g);box(.09,.5,.1,c,-.23,.95,0,g);box(.09,.5,.1,c,.23,.95,0,g);const sp=label3d(name);sp.position.y=1.9;g.add(sp);return g}
+function spawnSeek(){const i=TICKETS.findIndex((k,j)=>k.loc===4&&st.state[j]===null);if(i<0)return;const k=TICKETS[i],px=cam.position.x,pz=cam.position.z;let sp=null;
+ for(const d of[6,4.5,3.2]){for(let a=0;a<14&&!sp;a++){const an=Math.random()*6.28,x=px+Math.cos(an)*d,z=pz+Math.sin(an)*d;if(free(x,z)&&clear(x,z,px,pz))sp=[x,z]}if(sp)break}
+ if(!sp)return;const g=mkPerson(k.col,k.who);g.position.set(sp[0],0,sp[1]);S.add(g);seek={t:i,g,x:sp[0],z:sp[1],name:k.who,born:performance.now(),lost:0};toast('📣 '+k.who+' te busca para pedirte ayuda',4000);beep(660,.15)}
+function endSeek(ok){if(!seek)return;S.remove(seek.g);if(!ok){st.sat=Math.max(0,st.sat-3);hud();toast(seek.name+' se cansó de esperar (−3 satisfacción)')}seek=null;seekAt=performance.now()+(ok?15000:20000)}
+function seekUpdate(dt,t){if(!seek)return;const px=cam.position.x,pz=cam.position.z,dx=px-seek.x,dz=pz-seek.z,d=Math.hypot(dx,dz)||1;
+ if(d>1.7){const v=Math.min(1.8*dt,d-1.7);seek.x+=dx/d*v;seek.z+=dz/d*v}
+ if(!clear(seek.x,seek.z,px,pz)){seek.lost+=dt;if(seek.lost>1.5){const bx=px+Math.sin(yaw)*2.2,bz=pz+Math.cos(yaw)*2.2;if(free(bx,bz)){seek.x=bx;seek.z=bz}seek.lost=0}}else seek.lost=0;
+ seek.g.position.set(seek.x,d>1.9?Math.abs(Math.sin(t/160))*.04:0,seek.z);seek.g.rotation.y=Math.atan2(dx,dz);
+ if(!sitting&&performance.now()-seek.born>70000)endSeek(false)}
+setInterval(()=>{if(!st.state||st.over||atHome||seek||sitting)return;if(performance.now()>seekAt)spawnSeek()},1000);
+
+let atHome=false;
+function goHome(){$('end').style.display='none';atHome=true;G.nt={study:0,cook:0,tv:0};cam.position.set(8.8,1.6,0);yaw=-Math.PI/2;pitch=0;toast('Llegaste a casa. Estudia, cocina, mira TV y duerme para empezar un nuevo día.',5000)}
+function homeAct(k){
+ if(k==='study'){G.nt.study=1;G.xp+=25;toast('Estudiaste para tu certificación: +25 XP');beep(880,.1)}
+ else if(k==='cook'){G.nt.cook=1;G.money=Math.max(0,G.money-5);toast('Cocinaste una buena cena: +5 de satisfacción mañana (−$5)')}
+ else if(k==='tv'){G.nt.tv=1;toast('Un rato de TV para despejarte: +5 de satisfacción mañana')}
+ else{atHome=false;G.day++;save();newDay();cam.position.set(-1,1.6,2);yaw=0;pitch=0}
+ hud()}
+function newDay(){
+ st.over=false;st.cur=-1;if(seek){S.remove(seek.g);seek=null}seekAt=performance.now()+12000;st.done=0;st.net=0;st.time=480;st.sat=50+(ups.coffee?10:0)+(G.nt?G.nt.cook*5+G.nt.tv*5:0);st.sec=50;st.earn=0;G.eve=0;
+ TICKETS.length=0;{const all=POOL.map(k=>({...k,from0:k.from})).sort(()=>Math.random()-.5),cp=all.find(k=>k.copy);[cp,...all.filter(k=>!k.copy)].slice(0,8).forEach(k=>TICKETS.push(k))}TICKETS.sort(()=>Math.random()-.5);TICKETS.forEach(k=>{k.loc=k.copy?5:0});
+ const cand=TICKETS.filter(k=>!k.copy&&!/Seguridad|\bTI\b|Teletrabajo|Soporte|Mesa/.test(k.from0)),pool=(cand.length>=3?cand:TICKETS).slice().sort(()=>Math.random()-.5);
+ [1,2,3].forEach((l,n)=>{const k=pool[n];k.loc=l;k.from=STN[l].name+' · '+STN[l].dept});
+ {const WN=['Rosa','Miguel','Sofía','Andrea','Jorge','Patricia','Daniel','Elena'].sort(()=>Math.random()-.5),COL=[0xd05a7a,0x4c7ad0,0x6a9a4c,0xe8a03a,0x8a5ac0,0x3aa7a7];
+  pool.slice(3,5).forEach((k,n)=>{if(k.loc)return;k.loc=4;k.who=WN[n];k.col=COL[(Math.random()*6)|0];k.from=k.who+' · '+k.from0.replace(/^.*\((.*)\)$/,'$1')})}
+ st.state=TICKETS.map(()=>null);
+ const ids=USERS.map((_,i)=>i).sort(()=>Math.random()-.5);st.ad=USERS.map(()=>({lock:false,off:false,ex:false}));st.ad[ids[0]].lock=st.ad[ids[1]].lock=true;st.ad[ids[2]].ex=true;
+ st.adt=[[ids[0],'unlock'],[ids[1],'unlock'],[ids[2],'disable']].map(([u,k])=>({u,k,done:false,txt:(k==='unlock'?'Desbloquear la cuenta de ':'Deshabilitar la cuenta del ex empleado ')+USERS[u][1]}));
+ st.mail=MT.map(m=>({m,a:null})).sort(()=>Math.random()-.5).slice(0,5);
+ st.cmdout='';st.mfa=0;st.bios={loc:1+((Math.random()*3)|0),done:false,page:'Main',cfg:{boot:'USB Drive',sb:'Disabled',tpm:'Disabled'}};
+ {const rn=n=>(Math.random()*n)|0,pad=n=>String(n).padStart(2,'0'),atk='185.220.101.'+(10+rn(80)),au=USERS[rn(8)][0],L=[],BN=[[4624,'Auditoría correcta'],[4672,'Información'],[7036,'Información'],[4625,'Auditoría de errores']];
+  for(let i=0;i<5;i++)L.push({t:`03:12:${pad(i*2+1)}`,lv:'Auditoría de errores',id:4625,u:au,ip:atk});L.push({t:'03:12:14',lv:'Auditoría correcta',id:4624,u:au,ip:atk});
+  for(let i=0;i<9;i++){const b=BN[rn(i<2?3:4)];L.push({t:`${pad(7+rn(9))}:${pad(rn(60))}:${pad(rn(60))}`,lv:b[1],id:b[0],u:USERS[rn(8)][0],ip:'10.0.0.'+(10+rn(40))})}
+  st.evl=L.sort((a,b)=>a.t<b.t?-1:1);st.inv={ip:atk,done:false}}
+ const dv=DEV.map((_,i)=>i).sort(()=>Math.random()-.5);st.dev=DEV.map(()=>'ok');st.ev=[0,1,2].map(i=>({t:540+i*120+((Math.random()*60)|0),d:dv[i],fired:false,done:false}));
+ SW.host='Switch';SW.secret='';SW.vlans={1:'default'};SW.svi={};PN.forEach(k=>SW.ports[k]={mode:'access',vlan:1,shut:false,desc:''});
+ startup=cfg();wrote=false;cm='user';ctx=null;pend=0;ji=0;JOBS=mkJobs(G.day);$('tm').textContent='';
+ $('end').style.display='none';hud();drawScreen();drawSt();
+ toast(G.day===1?'Bienvenido a CAA Corp. Los usuarios te buscarán para pedir ayuda; también puedes visitar RRHH, Copiado, Contabilidad, Ventas, Operaciones y Gerencia.':`Día ${G.day} en una nueva sucursal. ¡Suerte!`,5000)}
+
+let bl=0,fr=0,f0=0,last=performance.now();
+const CA=new THREE.Color(0xe9b58a),CB=new THREE.Color(0xdcc0a0),CC=new THREE.Color(0xc2603e),TMP=new THREE.Color();
+function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000);last=t;seekUpdate(dt,t);fr++;if(t-f0>500){$('fps').textContent=(cam.position.x<-4?'Data center':cam.position.x<4?'Oficina':cam.position.x<8?'Pasillo':'Apartamento')+' · '+Math.round(fr*1000/(t-f0))+' FPS';fr=0;f0=t}{const tf=Math.min(1,Math.max(0,(st.time-480)/540)),u=tf<.5?tf*2:(tf-.5)*2;TMP.copy(tf<.5?CA:CB).lerp(tf<.5?CB:CC,u);S.background.copy(TMP);S.fog.color.copy(TMP);sun.intensity=.9-.3*tf;HEADS.forEach((h,i)=>{h.position.y=1.2+Math.sin(t/700+i*2)*.012});dust.rotation.y=t/60000;dust.position.y=Math.sin(t/3000)*.08}if(((t/350)|0)!==bl){bl=(t/350)|0;LEDS.forEach(l=>{if(Math.random()<.25)l.material.color.setHex(Math.random()<.4?0x111111:lm[(Math.random()*4)|0])})}
+ if(!sitting){const f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0),s=(keys.KeyD?1:0)-(keys.KeyA?1:0);
+  if(keys.ArrowLeft)yaw+=dt*1.8;if(keys.ArrowRight)yaw-=dt*1.8;
+  const sp=2.6*dt,nx=cam.position.x+(-Math.sin(yaw)*f+Math.cos(yaw)*s)*sp,nz=cam.position.z+(-Math.cos(yaw)*f-Math.sin(yaw)*s)*sp;
+  const ok=(x,z)=>{for(const d of DK)if(Math.abs(x-d[0])<d[2]&&Math.abs(z-d[1])<d[3])return false;
+   return WK.some(r=>x>r[0]&&x<r[1]&&z>r[2]&&z<r[3])};
+  if(ok(nx,cam.position.z))cam.position.x=nx;if(ok(cam.position.x,nz))cam.position.z=nz}
+ cam.rotation.set(pitch,yaw,0);cam.position.y=1.6+((keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD||keys.ArrowUp||keys.ArrowDown)&&!sitting?Math.sin(t/140)*.03:0);
+ {const a=near(),l=a&&label(a);$('use').style.display=l&&st.time<END?'block':'none';if(l)$('use').textContent=l}
+ R.render(S,cam)}
+newDay();requestAnimationFrame(loop);
+</script></body></html>

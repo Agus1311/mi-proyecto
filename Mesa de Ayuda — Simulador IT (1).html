@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mesa de Ayuda — Simulador IT</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--ink:#2a2230;--paper:#f6e7d8;--teal:#2f6f8f;--warm:#e8a77c;--ok:#4c9a6a;--bad:#c4503f}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#1d1520;font-family:'Space Grotesk',system-ui,sans-serif;color:#fff;overflow:hidden}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+#hud{position:fixed;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 0;display:flex;gap:10px;align-items:center;pointer-events:none;font-weight:600}
+#clock{background:#2f6f8fcc;padding:8px 14px;border-radius:999px}
+.st{background:#00000066;padding:8px 12px;border-radius:999px;font-size:14px}
+#hint{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);text-align:center;font-size:14px;opacity:.85;pointer-events:none}
+#use{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 56px);transform:translateX(-50%);display:none;background:var(--warm);color:var(--ink);border:0;border-radius:12px;padding:14px 22px;font:700 16px 'Space Grotesk',system-ui,sans-serif;cursor:pointer}
+#pc{position:fixed;inset:0;display:none;background:#1d1520e6;padding:calc(env(safe-area-inset-top,0px) + 16px) 12px calc(env(safe-area-inset-bottom,0px) + 16px)}
+#win{max-width:980px;height:100%;margin:0 auto;background:var(--paper);color:var(--ink);border-radius:10px;display:grid;grid-template-columns:minmax(200px,300px) 1fr;grid-template-rows:auto 1fr;overflow:hidden;box-shadow:0 20px 60px #000a}
+#bar{grid-column:1/3;background:var(--teal);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-weight:700}
+#bar button{background:#ffffff26;color:#fff;border:0;border-radius:8px;padding:6px 12px;font:600 14px inherit;cursor:pointer}
+#list{border-right:2px solid #d9c3ae;overflow:auto}
+.tk{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #e5d2bf;background:transparent;padding:12px 14px;font:inherit;color:inherit;cursor:pointer}
+.tk:hover,.tk:focus-visible{background:#ecd4bd;outline:none}
+.tk.on{background:#e8a77c55}.tk.done{opacity:.45;text-decoration:line-through}
+.tk small{display:block;opacity:.7;margin-top:2px}
+.pri{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+#det{padding:18px 20px;overflow:auto}
+#det h2{margin:0 0 4px;font-size:22px}
+#det p{line-height:1.55;max-width:62ch}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:12px 14px;border-radius:8px;border:2px solid var(--teal);background:#fff;color:var(--ink);font:inherit;cursor:pointer}
+.opt:hover,.opt:focus-visible{background:var(--teal);color:#fff;outline:none}
+#fb{margin-top:14px;padding:12px 14px;border-radius:8px;font-weight:600;display:none}
+#end{position:fixed;inset:0;display:none;place-items:center;background:#1d1520f2;text-align:center;padding:24px}
+#end div{max-width:460px}#end h1{font-size:34px;margin:0 0 8px}
+#end button{margin-top:18px;background:var(--warm);color:var(--ink);border:0;border-radius:12px;padding:14px 22px;font:700 16px inherit;cursor:pointer}
+#dc{position:fixed;inset:0;display:none;background:#0b1118f2;padding:calc(env(safe-area-inset-top,0px) + 16px) 12px 16px;overflow:auto}
+#sw{max-width:760px;margin:0 auto;background:#16202b;border:2px solid #2f6f8f;border-radius:10px;padding:16px}
+#sw h2{margin:0 0 4px}#sw p{margin:4px 0 12px;line-height:1.5}
+#pg{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;margin:12px 0}
+.pt{aspect-ratio:1;border:0;border-radius:4px;background:#0a0f14;color:#9fb3c4;font-family:inherit;font-weight:600;font-size:11px;cursor:pointer;border-bottom:3px solid #3a4b5a;padding:0}
+.pt.on{background:#2a4fd0;color:#fff;border-bottom-color:#7da0ff}.pt.bad{background:#a63b2f;color:#fff;border-bottom-color:#e8786a}.pt.new{background:#4c9a6a;color:#fff;border-bottom-color:#9fe0b4}
+.sb{background:#2f6f8f;color:#fff;border:0;border-radius:8px;padding:10px 14px;margin:4px 6px 4px 0;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer}.sb.act{background:#4c9a6a}.sb.dg{background:#6a3a40}
+#dg{line-height:1.6;background:#101923;border-radius:8px;padding:10px 12px;margin:8px 0}#dg small{display:block;opacity:.7;margin-top:4px}
+#tm{background:#05080c;color:#cfe8d5;font-family:'Courier New',ui-monospace,monospace;font-size:13px;white-space:pre-wrap;height:min(38vh,320px);overflow:auto;padding:10px;border-radius:6px 6px 0 0}
+#pl{display:flex;gap:6px;background:#05080c;padding:6px 10px 10px;border-radius:0 0 6px 6px;font-family:'Courier New',ui-monospace,monospace;font-size:13px;color:#cfe8d5;border-top:1px solid #1d2a36}
+#ti{flex:1;min-width:0;background:transparent;border:0;color:#fff;font:inherit;font-size:16px;outline:none}
+@media(max-width:640px){#win{grid-template-columns:1fr;grid-template-rows:auto 150px 1fr}#bar{grid-column:1}#list{border-right:0;border-bottom:2px solid #d9c3ae}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud"><div id="clock"></div><div class="st" id="s1"></div><div class="st" id="s2"></div><div class="st" id="s3"></div></div>
+<div id="hint">Arrastra para mirar · WASD / flechas para moverte · estaciones en la oficina y data center por la puerta izquierda</div>
+<button id="use">Sentarse en la PC (E)</button>
+<div id="pc"><div id="win">
+ <div id="bar"><span>Zoho Desk — Cola de tickets</span><button id="close">Cerrar (Esc)</button></div>
+ <div id="list"></div>
+ <div id="det"><h2>Selecciona un ticket</h2><p>Atiende cada caso eligiendo la mejor acción. Cada decisión consume tiempo y afecta la satisfacción de los usuarios y la seguridad de la empresa.</p></div>
+</div></div>
+<div id="dc"><div id="sw"><h2>Consola del switch core — Cisco Catalyst 2960</h2><div id="dg"></div><div id="pg"></div><div id="tm"></div><label id="pl"><span id="ps"></span><input id="ti" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Línea de comandos"></label><p><small>Rojo = puerto apagado · Azul = access en VLAN distinta de 1 · Verde = troncal. Toca un puerto para escribir su interfaz.</small></p><button class="sb" id="bx">Salir (Esc)</button></div></div>
+<div id="end"><div><h1 id="eh"></h1><p id="ep"></p><button onclick="location.reload()">Jugar otra vez</button></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ---------- DATOS DEL JUEGO ---------- */
+const TICKETS=[
+{p:2,from:"Marta (Contabilidad)",t:"Cuenta bloqueada",b:"No puedo entrar a mi usuario desde esta mañana y tengo cierre de mes. Dice que la cuenta está bloqueada.",o:[
+ ["Desbloquear en Active Directory y revisar el log de intentos fallidos",8,6,"Revisaste los eventos 4740 y era una contraseña vieja guardada en el celular."],
+ ["Restablecer la contraseña por chat sin verificar identidad",4,-10,"Alguien pudo suplantarla. Siempre valida la identidad primero."],
+ ["Pedirle que espere 30 minutos al desbloqueo automático",-8,0,"Marta pierde horas en pleno cierre."]]},
+{p:3,from:"Seguridad (alerta automática)",t:"Correo sospechoso reportado",b:"Tres empleados recibieron un correo de 'Microsoft 365' pidiendo verificar su cuenta con un enlace acortado.",o:[
+ ["Aislar el correo, bloquear el dominio y avisar a los usuarios",5,12,"Contuviste el phishing. Nadie hizo clic."],
+ ["Responder al remitente para pedir más información",0,-12,"Confirmaste que el buzón está activo. Mala idea."],
+ ["Ignorarlo, parece spam normal",2,-14,"Un usuario ingresó credenciales. Tocó rotar contraseñas."]]},
+{p:1,from:"Luis (Operaciones)",t:"Impresora no imprime",b:"La impresora del segundo piso muestra 'fuera de línea'. Es la única que imprime etiquetas.",o:[
+ ["Revisar cable de red, cola de impresión y reiniciar el spooler",9,0,"El spooler estaba trabado. Resuelto en 5 minutos."],
+ ["Reinstalar el driver en todas las PC",2,0,"Funcionó, pero tardaste demasiado para algo simple."],
+ ["Comprar una impresora nueva",-5,-2,"Gasto innecesario para una cola trabada."]]},
+{p:3,from:"Gerencia General",t:"Laptop de ejecutivo sin cifrar",b:"El auditor detectó que la laptop del gerente no tiene BitLocker activo y viaja con frecuencia.",o:[
+ ["Activar BitLocker, guardar la clave en AD y documentar",6,14,"Cumples con la política y reduces riesgo de fuga."],
+ ["Posponerlo hasta la próxima auditoría",0,-12,"Una laptop robada expondría datos sensibles."],
+ ["Activarlo sin respaldar la clave de recuperación",-6,4,"Queda cifrada, pero si falla el TPM perderán los datos."]]},
+{p:2,from:"Andrea (RRHH)",t:"Alta de nuevo empleado",b:"Mañana entra un analista. Necesita usuario, correo Microsoft 365, acceso a la carpeta de su área y una laptop.",o:[
+ ["Crear usuario con mínimo privilegio, grupo del área y licencia M365",8,8,"Alta correcta con permisos justos."],
+ ["Copiar los permisos de otro analista antiguo",4,-8,"Heredó accesos que no necesita."],
+ ["Darle administrador local para que 'no moleste'",5,-14,"Violó el principio de mínimo privilegio."]]},
+{p:2,from:"Carlos (Ventas)",t:"Computadora muy lenta",b:"Mi PC tarda 10 minutos en arrancar y el ventilador suena fuerte desde hace días.",o:[
+ ["Revisar programas de inicio, disco, malware y temperatura",9,3,"Había un minero de cripto. Eliminado y reportado."],
+ ["Formatear sin hacer respaldo",-6,0,"Carlos perdió su carpeta de cotizaciones."],
+ ["Decirle que reinicie más seguido",-7,-4,"No resolvió nada y el malware siguió."]]},
+{p:3,from:"Soporte remoto",t:"Proveedor pide acceso remoto",b:"Un proveedor de software pide conectarse a un servidor por TeamViewer 'urgente' y sin ticket previo.",o:[
+ ["Verificar con el responsable, acceso temporal y sesión grabada",4,12,"Acceso controlado y auditable."],
+ ["Darle la clave porque dice que es urgente",5,-16,"Acceso no autorizado a un servidor. Incidente grave."],
+ ["Negarlo sin explicar nada",-4,2,"Seguro, pero el proveedor quedó molesto."]]},
+{p:1,from:"Sofía (Legal)",t:"Outlook no sincroniza",b:"Mi correo dejó de actualizarse en el escritorio, en el celular sí llega.",o:[
+ ["Recrear el perfil de Outlook y revisar la cuota del buzón",8,0,"El OST estaba corrupto."],
+ ["Cambiarle el correo a otra cuenta",-6,-3,"Rompiste su historial y firmas."],
+ ["Reiniciar el servidor de correo",-10,-6,"Afectaste a toda la empresa."]]}
+];
+const LOC=[1,0,2,0,0,3,0,0];TICKETS.forEach((k,i)=>k.loc=LOC[i]);const STN=[null,{name:'Marta'},{name:'Luis'},{name:'Carlos'}];
+const PRI=["#4c9a6a","#e8b04c","#c4503f"];
+const st={sat:50,sec:50,done:0,time:8*60,cur:-1,net:0,state:TICKETS.map(()=>null)};
+const END=17*60;let onsite=0;
+const $=id=>document.getElementById(id);
+const fmt=()=>{const h=Math.floor(st.time/60),m=st.time%60;return `21/01/2025  ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`};
+function hud(){$('clock').textContent=fmt();$('s1').textContent='Satisfacción '+st.sat;$('s2').textContent='Seguridad '+st.sec;$('s3').textContent=`Tickets ${st.done}/${TICKETS.length} · Red ${st.net}/3`}
+function renderList(){
+ $('list').innerHTML='';
+ TICKETS.forEach((k,i)=>{const b=document.createElement('button');b.className='tk'+(st.cur===i?' on':'')+(st.state[i]!==null?' done':'');
+  b.innerHTML=`<span class="pri" style="background:${PRI[k.p-1]}"></span><b>${k.t}</b><small>${k.from}${k.loc?' · En sitio':''}</small>`;
+  b.onclick=()=>openTicket(i);$('list').appendChild(b)});
+}
+function openTicket(i){
+ st.cur=i;renderList();const k=TICKETS[i],d=$('det');
+ if(st.state[i]===null&&k.loc!==onsite){d.innerHTML=`<h2>${k.t}</h2><small>De: ${k.from}</small><p>${k.b}</p><p><b>${k.loc?'Este caso requiere visita en sitio: ve a la estación de '+STN[k.loc].name+'.':'Este caso se atiende desde tu escritorio.'}</b></p>`;return}
+ if(st.state[i]!==null){d.innerHTML=`<h2>${k.t}</h2><p>Ticket cerrado.</p>`;return}
+ d.innerHTML=`<h2>${k.t}</h2><small>De: ${k.from}</small><p>${k.b}</p><div id="opts"></div><div id="fb"></div>`;
+ k.o.forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.textContent=o[0];b.onclick=()=>resolve(i,j);$('opts').appendChild(b)});
+}
+function resolve(i,j){
+ const o=TICKETS[i].o[j];st.state[i]=j;st.done++;
+ st.sat=Math.max(0,Math.min(100,st.sat+o[1]));st.sec=Math.max(0,Math.min(100,st.sec+o[2]));
+ st.time+=25;hud();drawScreen();drawSt();
+ const good=o[1]+o[2]>=8,fb=$('fb');
+ $('opts').style.display='none';fb.style.display='block';
+ fb.style.background=good?'#4c9a6a33':'#c4503f33';
+ fb.innerHTML=`${o[3]}<br><small>Satisfacción ${o[1]>=0?'+':''}${o[1]} · Seguridad ${o[2]>=0?'+':''}${o[2]}</small><br><button class="opt" style="width:auto;margin-top:10px" id="nx">Siguiente ticket</button>`;
+ $('nx').onclick=()=>{renderList();const n=st.state.findIndex(s=>s===null);if(n<0||st.time>=END)finish();else openTicket(n)};
+ renderList();
+}
+function finish(){
+ $('pc').style.display='none';$('dc').style.display='none';const t=(st.sat+st.sec)/2;
+ const r=t>=80?'Analista estrella':t>=60?'Buen desempeño':t>=40?'Necesitas práctica':'Día para el olvido';
+ $('eh').textContent=r;
+ $('ep').textContent=`Cerraste ${st.done} de ${TICKETS.length} tickets y ${st.net} de 3 trabajos de red. Satisfacción ${st.sat}/100 y seguridad ${st.sec}/100. Hora final: ${fmt().split('  ')[1]}.`;
+ $('end').style.display='grid';
+}
+$('close').onclick=()=>{$('pc').style.display='none';sitting=false};
+
+/* ---------- ESCENA 3D ---------- */
+const cv=$('c'),R=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+R.setPixelRatio(Math.min(devicePixelRatio,2));R.shadowMap.enabled=true;
+const S=new THREE.Scene();S.background=new THREE.Color(0xd9a77f);S.fog=new THREE.Fog(0xd9a77f,8,18);
+const cam=new THREE.PerspectiveCamera(70,1,.1,50);
+const M=(c,o={})=>new THREE.MeshLambertMaterial(Object.assign({color:c,flatShading:true},o));
+function box(w,h,d,c,x,y,z,parent=S){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M(c));m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;parent.add(m);return m}
+S.add(new THREE.HemisphereLight(0xffe2c4,0x8a6a58,.75));
+const sun=new THREE.DirectionalLight(0xffc88a,.9);sun.position.set(-4,5,3);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
+Object.assign(sun.shadow.camera,{left:-6,right:6,top:6,bottom:-6});S.add(sun);
+// suelo ajedrezado
+const cc=document.createElement('canvas');cc.width=cc.height=2;const cx=cc.getContext('2d');
+cx.fillStyle='#2f6f8f';cx.fillRect(0,0,2,2);cx.fillStyle='#f3e7cf';cx.fillRect(0,0,1,1);cx.fillRect(1,1,1,1);
+const ft=new THREE.CanvasTexture(cc);ft.magFilter=THREE.NearestFilter;ft.wrapS=ft.wrapT=THREE.RepeatWrapping;ft.repeat.set(4,3);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(8,6),new THREE.MeshLambertMaterial({map:ft}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;S.add(floor);
+// paredes
+const WALL=0xf0c9a0;
+box(8,3,.2,WALL,0,1.5,-3);box(.2,3,2.1,WALL,-4,1.5,-1.95);box(.2,3,2.1,WALL,-4,1.5,1.95);box(.2,1,1.8,WALL,-4,2.5,0);box(.2,3,6,WALL,4,1.5,0);box(8,3,.2,WALL,0,1.5,3);box(8,.2,6,0x7a5a48,0,3,0);
+// ventanas (marco + vidrio verde con árboles)
+function win(x,z,ry){const g=new THREE.Group();box(3,1.3,.12,0x111111,0,0,0,g);
+ const gl=new THREE.Mesh(new THREE.PlaneGeometry(2.7,1.05),new THREE.MeshBasicMaterial({color:0x4fa56a}));gl.position.z=.07;g.add(gl);
+ for(let i=0;i<4;i++){const b=new THREE.Mesh(new THREE.IcosahedronGeometry(.3+Math.random()*.2,0),M(0x2e8a4f));b.position.set(-1+i*.7,-.2+Math.random()*.3,.12);g.add(b)}
+ g.position.set(x,1.7,z);g.rotation.y=ry;S.add(g)}
+win(0,-2.88,0);win(-1.6,2.88,Math.PI);
+// escritorio con PC
+const desk=new THREE.Group();desk.position.set(2,0,-1.9);S.add(desk);
+box(2.2,.07,1,0x77687a,0,.76,0,desk);box(.5,.76,.95,0x15121a,-.85,.38,0,desk);box(.5,.76,.95,0x15121a,.85,.38,0,desk);
+box(.1,.3,.05,0x222,0,.9,-.1,desk);box(.4,.02,.15,0x111,0,.8,.2,desk);
+const sc=document.createElement('canvas');sc.width=256;sc.height=160;const sx=sc.getContext('2d'),stex=new THREE.CanvasTexture(sc);
+const screen=new THREE.Mesh(new THREE.PlaneGeometry(.7,.44),new THREE.MeshBasicMaterial({map:stex}));screen.position.set(0,1.18,-.07);desk.add(screen);
+box(.74,.48,.04,0x111,0,1.18,-.1,desk);
+box(.12,.1,.1,0xff4f9a,.55,.82,.2,desk);box(.1,.1,.1,0x2a3a8a,.7,.82,.1,desk);
+function drawScreen(){const g=sx.createLinearGradient(0,0,256,160);g.addColorStop(0,'#4b2a6a');g.addColorStop(1,'#241338');sx.fillStyle=g;sx.fillRect(0,0,256,160);
+ sx.fillStyle='#fff';sx.font='bold 18px sans-serif';sx.fillText('Zoho Desk',16,30);sx.font='14px sans-serif';
+ const left=st.state.filter(s=>s===null).length;sx.fillText(left+' tickets pendientes',16,60);sx.fillStyle='#e8a77c';sx.fillText('Active Directory · M365',16,90);
+ sx.fillStyle='#fff8';sx.fillText(fmt().split('  ')[1],16,140);stex.needsUpdate=true}
+// silla azul
+const chair=new THREE.Group();chair.position.set(2.4,0,-1);chair.rotation.y=-.5;S.add(chair);
+box(.6,.08,.6,0x2f5fbf,0,.5,0,chair);box(.6,.7,.08,0x2f5fbf,0,.9,.3,chair);box(.08,.5,.08,0x222,0,.25,0,chair);box(.7,.05,.1,0x222,0,.03,0,chair);box(.1,.05,.7,0x222,0,.03,0,chair);
+// mueble largo con cosas
+box(2.6,.7,.5,0xefe6d6,-1.5,.35,-2.7);box(2.6,.05,.5,0xc07a3a,-1.5,.72,-2.7);
+for(let i=0;i<6;i++)box(.5,.04,.35,[0xffffff,0x4c9a6a,0x2f6f8f,0xc4503f,0xffffff,0x4c9a6a][i],-2.2,.76+i*.045,-2.7);
+box(.3,.3,.3,0x1c3fc8,-1.1,.9,-2.7);box(.04,.5,.04,0x2a4a2a,-1.1,1.3,-2.7);box(.02,.5,.02,0x2a4a2a,-1.05,1.3,-2.72);
+box(.25,.2,.15,0x2f6fd0,-.4,.85,-2.7);
+// monitor CRT en la pared
+box(.5,.4,.45,0xb8b3a8,.6,2,-2.8);box(.4,.3,.05,0x222,.6,2,-2.55);box(.6,.04,.4,0xc07a3a,.6,1.75,-2.8);
+// estantería derecha
+box(.15,2.4,2,0xd8c7b0,3.9,1.2,.8);for(let i=0;i<4;i++)box(.18,.04,2,0x6a6a6a,3.85,.5+i*.6,.8);
+// persiana en techo
+box(1.5,.02,.9,0x3a2a30,1.5,2.97,-.5);
+
+// estaciones de oficina
+const SCR=[];
+function station(x,z,shirt){const g=new THREE.Group();g.position.set(x,0,z);S.add(g);
+ box(1.6,.07,.8,0x8a7a8e,0,.76,0,g);box(.06,.76,.7,0x1a1620,-.72,.38,0,g);box(.06,.76,.7,0x1a1620,.72,.38,0,g);
+ const c=document.createElement('canvas');c.width=256;c.height=128;const t=new THREE.CanvasTexture(c);
+ [-.38,.38].forEach(dx=>{box(.7,.42,.04,0x111,dx,1.1,-.2,g);const m=new THREE.Mesh(new THREE.PlaneGeometry(.64,.36),new THREE.MeshBasicMaterial({map:t}));m.position.set(dx,1.1,-.17);g.add(m);box(.06,.3,.06,0x222,dx,.92,-.2,g)});
+ box(.45,.02,.15,0x222,0,.8,.1,g);box(.1,.1,.1,0xff4f9a,.6,.82,.15,g);
+ box(.5,.08,.5,0x2f5fbf,0,.5,.9,g);box(.5,.6,.07,0x2f5fbf,0,.85,1.18,g);
+ box(.32,.5,.2,shirt,0,.85,.88,g);box(.2,.2,.2,0xe0a97a,0,1.2,.88,g);box(.3,.12,.4,0x333344,0,.6,.7,g);
+ SCR.push({c,t})}
+station(-2.6,0,0xd05a7a);station(-.7,0,0x4c7ad0);station(1.4,0,0x6a9a4c);
+function drawSt(){SCR.forEach((s,i)=>{const x=s.c.getContext('2d'),p=TICKETS.some((k,j)=>k.loc===i+1&&st.state[j]===null);
+ x.fillStyle=p?'#8a2f2f':'#1f7f8f';x.fillRect(0,0,256,128);x.fillStyle='#fff';x.font='bold 22px sans-serif';x.fillText(STN[i+1].name,12,36);x.font='16px sans-serif';x.fillText(p?'Ticket abierto':'Sin incidencias',12,70);s.t.needsUpdate=true})}
+// data center
+const dfl=new THREE.Mesh(new THREE.PlaneGeometry(8,6),new THREE.MeshLambertMaterial({color:0x1b2430}));dfl.rotation.x=-Math.PI/2;dfl.position.x=-8;dfl.receiveShadow=true;S.add(dfl);
+const DW=0x2a3441;box(8,3,.2,DW,-8,1.5,-3);box(8,3,.2,DW,-8,1.5,3);box(.2,3,6,DW,-12,1.5,0);box(8,.2,6,0x141a22,-8,3,0);box(8,.1,.3,0x555b66,-8,2.7,0);
+const dl=new THREE.PointLight(0x5aa0ff,.9,10);dl.position.set(-8,2.6,0);S.add(dl);
+const LEDS=[],lm=[0x39ff7a,0xffb03a,0x39ff7a,0x4aa8ff];
+for(let i=0;i<6;i++){const rg=new THREE.Group();rg.position.set(-11+i*1.2,0,-2.4);S.add(rg);box(.9,2.3,.9,0x14171d,0,1.15,0,rg);
+ for(let u=0;u<9;u++){box(.8,.14,.02,0x2c3440,0,.3+u*.22,.46,rg);for(let k=0;k<4;k++){const l=new THREE.Mesh(new THREE.BoxGeometry(.03,.03,.02),new THREE.MeshBasicMaterial({color:lm[k]}));l.position.set(-.3+k*.08,.3+u*.22,.48);rg.add(l);LEDS.push(l)}}}
+['Nexus 9300','UCS C240','Nexus 9300','ASR 1001','Catalyst 9300','Catalyst 2960 · CORE'].forEach((n,i)=>{const c=document.createElement('canvas');c.width=256;c.height=40;const x=c.getContext('2d');x.fillStyle=i===5?'#0a5f8f':'#0b2a3d';x.fillRect(0,0,256,40);x.fillStyle='#fff';x.font='bold 15px sans-serif';x.fillText('CISCO '+n,8,26);const m=new THREE.Mesh(new THREE.PlaneGeometry(.8,.125),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}));m.position.set(-11+i*1.2,2.2,-1.93);S.add(m)});
+{const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.fillStyle='#1b2430';x.fillRect(0,0,256,64);x.fillStyle='#6ec1ff';x.font='bold 26px sans-serif';x.fillText('DATA CENTER',34,42);
+ const m=new THREE.Mesh(new THREE.PlaneGeometry(.9,.22),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}));m.position.set(-3.88,2.3,0);m.rotation.y=Math.PI/2;S.add(m)}
+
+/* ---------- CONSOLA CISCO IOS ---------- */
+const PN=[];for(let i=1;i<=24;i++)PN.push('Fa0/'+i);PN.push('Gi0/1','Gi0/2');
+const FULL=k=>(k[0]==='F'?'FastEthernet':'GigabitEthernet')+k.slice(2);
+const SW={host:'Switch',secret:'',vlans:{1:'default'},ports:{},svi:{}};
+PN.forEach(k=>SW.ports[k]={mode:'access',vlan:1,shut:false,desc:''});
+const cfg=()=>JSON.stringify({h:SW.host,s:SW.secret,v:SW.vlans,p:SW.ports,i:SW.svi});
+let startup=cfg(),wrote=false,cm='user',ctx=null,hist=[],hi=0,pend=0,ji=0;
+const saved=()=>wrote&&startup===cfg();
+const P=k=>k[0]==='V'?SW.svi[+k.slice(1)]:SW.ports[k];
+const pd=(x,n)=>String(x).padEnd(n);
+const BAD=()=>{throw "% Invalid input detected at '^' marker."},INC=()=>{throw '% Incomplete command.'};
+const pick=(w,l)=>{if(!w)return null;w=w.toLowerCase();if(l.includes(w))return w;const m=l.filter(x=>x.startsWith(w));return m.length===1?m[0]:m.length>1?'?':null};
+const ipok=x=>/^(\d{1,3}\.){3}\d{1,3}$/.test(x||'')&&x.split('.').every(n=>+n<256);
+const say=t=>{const d=$('tm');d.textContent+=t+'\n';d.scrollTop=d.scrollHeight};
+const PS=()=>SW.host+({user:'>',priv:'#',cfg:'(config)#',vlan:'(config-vlan)#',if:ctx&&ctx.length>1?'(config-if-range)#':'(config-if)#'})[cm];
+const hit=(a,b,m)=>{st.sat=Math.max(0,st.sat+a);st.sec=Math.max(0,st.sec+b);hud();say(m)};
+const vname=n=>'VLAN'+String(n).padStart(4,'0');
+function parseIf(a){const s=a.join('').toLowerCase();let m;
+ if(m=s.match(/^range(?:f|fa|fastethernet)0\/(\d+)-(?:(?:f|fa|fastethernet)0\/)?(\d+)$/)){const r=[];for(let n=+m[1];n<=+m[2];n++){if(!SW.ports['Fa0/'+n])BAD();r.push('Fa0/'+n)}return r}
+ if(m=s.match(/^(?:f|fa|fastethernet)0\/(\d+)$/)){if(!SW.ports['Fa0/'+m[1]])BAD();return['Fa0/'+m[1]]}
+ if(m=s.match(/^(?:g|gi|gigabitethernet)0\/(\d+)$/)){if(!SW.ports['Gi0/'+m[1]])BAD();return['Gi0/'+m[1]]}
+ if(m=s.match(/^vlan(\d+)$/)){const n=+m[1];if(n<1||n>4094)BAD();if(!SW.svi[n])SW.svi[n]={ip:'',mask:'',shut:true};return['V'+n]}
+ BAD()}
+function run(){let t=`Building configuration...\n\nCurrent configuration : ${cfg().length} bytes\n!\nversion 15.0\n!\nhostname ${SW.host}\n!\n`;
+ if(SW.secret)t+='enable secret 5 $1$mERr$hx5rVt7rPNoS4wqbXKX7m0\n!\n';
+ for(const n in SW.vlans)if(n!=1)t+=`vlan ${n}\n name ${SW.vlans[n]}\n!\n`;
+ PN.forEach(k=>{const p=SW.ports[k];t+=`interface ${FULL(k)}\n`;if(p.desc)t+=` description ${p.desc}\n`;if(p.mode==='trunk')t+=' switchport mode trunk\n';else if(p.vlan!==1)t+=` switchport access vlan ${p.vlan}\n switchport mode access\n`;if(p.shut)t+=' shutdown\n';t+='!\n'});
+ for(const n in SW.svi){const v=SW.svi[n];t+=`interface Vlan${n}\n ${v.ip?`ip address ${v.ip} ${v.mask}`:'no ip address'}\n${v.shut?' shutdown\n':''}!\n`}
+ return t+'end'}
+function sh(a,priv){const w=pick(a[0],['running-config','vlan','ip','version','interfaces']);if(!w||w==='?')BAD();
+ if(w==='running-config'){if(!priv)BAD();say(run())}
+ else if(w==='vlan'){let t='VLAN Name                             Status    Ports\n---- -------------------------------- --------- -------------------------------\n';
+  Object.keys(SW.vlans).map(Number).sort((x,y)=>x-y).forEach(n=>{t+=pd(n,5)+pd(SW.vlans[n],33)+pd('active',10)+PN.filter(k=>SW.ports[k].mode==='access'&&SW.ports[k].vlan===n).join(', ')+'\n'});say(t)}
+ else if(w==='ip'){if(pick(a[1],['interface'])!=='interface')BAD();let t='Interface              IP-Address      OK? Method Status                Protocol\n';
+  PN.forEach(k=>{const p=SW.ports[k];t+=pd(FULL(k),23)+pd('unassigned',16)+'YES unset  '+(p.shut?pd('administratively down',22)+'down':pd('up',22)+'up')+'\n'});
+  for(const n in SW.svi){const v=SW.svi[n];t+=pd('Vlan'+n,23)+pd(v.ip||'unassigned',16)+'YES '+(v.ip?'manual ':'unset  ')+(v.shut?pd('administratively down',22)+'down':pd('up',22)+'up')+'\n'}say(t)}
+ else if(w==='interfaces'){let t='Port      Name               Status       Vlan       Duplex  Speed Type\n';PN.forEach(k=>{const p=SW.ports[k];t+=pd(k,10)+pd(p.desc.slice(0,18),19)+pd(p.shut?'disabled':'connected',13)+pd(p.mode==='trunk'?'trunk':p.vlan,11)+'a-full  a-100 10/100BaseTX\n'});say(t)}
+ else say(`Cisco IOS Software, C2960 Software (C2960-LANBASEK9-M), Version 15.0(2)SE4\n${SW.host} uptime is 2 hours, 14 minutes`)}
+function wr(){startup=cfg();wrote=true;say('Building configuration...\n[OK]')}
+function restore(){const o=JSON.parse(startup);SW.host=o.h;SW.secret=o.s;SW.vlans=o.v;SW.ports=o.p;SW.svi=o.i}
+const CMD={
+user:{enable:()=>{if(SW.secret){pend=1;$('ti').type='password';say('Password:');return}cm='priv'},show:a=>sh(a,0),exit:()=>{}},
+priv:{disable:()=>{cm='user'},exit:()=>{cm='user'},show:a=>sh(a,1),write:()=>wr(),
+ configure:a=>{if(a[0]&&!'terminal'.startsWith(a[0]))BAD();cm='cfg';say('Enter configuration commands, one per line.  End with CNTL/Z.')},
+ copy:a=>{if(a.length<2)INC();wr()},
+ erase:a=>{if(!a[0])INC();startup=JSON.stringify({h:'Switch',s:'',v:{1:'default'},p:Object.fromEntries(PN.map(k=>[k,{mode:'access',vlan:1,shut:false,desc:''}])),i:{}});wrote=false;hit(-15,-8,'[OK] Erase of nvram: complete\n¡Borraste la configuración de arranque! Al reiniciar se perderá todo.')},
+ reload:()=>{const lost=cfg()!==startup;restore();cm='user';say('Reloading...\n');if(lost)hit(-4,0,'La configuración sin guardar se perdió. Usa write memory antes de reiniciar.')}},
+cfg:{hostname:a=>{if(!a[0])INC();SW.host=a[0]},
+ vlan:a=>{const n=+a[0];if(!n||n<1||n>4094)BAD();if(!SW.vlans[n])SW.vlans[n]=vname(n);cm='vlan';ctx=n},
+ interface:a=>{ctx=parseIf(a);cm='if'},
+ enable:a=>{if(pick(a[0],['secret'])!=='secret')BAD();if(!a[1])INC();SW.secret=a.slice(1).join(' ')},
+ no:a=>{if(pick(a[0],['vlan'])!=='vlan')BAD();const n=+a[1];if(n===1)say('% Default VLAN 1 may not be deleted.');else delete SW.vlans[n]},
+ do:a=>{const c=pick(a[0],['show','write','copy']);if(!c||c==='?')BAD();return CMD.priv[c](a.slice(1))},
+ exit:()=>{cm='priv'},end:()=>{cm='priv'}},
+vlan:{name:a=>{if(!a[0])INC();SW.vlans[ctx]=a.join('_')},exit:()=>{cm='cfg'},end:()=>{cm='priv'}},
+if:{shutdown:()=>ctx.forEach(k=>P(k).shut=true),
+ no:a=>{const w=pick(a[0],['shutdown','description']);if(!w||w==='?')BAD();ctx.forEach(k=>{if(w==='shutdown')P(k).shut=false;else P(k).desc=''})},
+ description:a=>{if(!a[0])INC();ctx.forEach(k=>P(k).desc=a.join(' '))},
+ switchport:a=>{if(ctx.some(k=>k[0]==='V'))BAD();const w=pick(a[0],['mode','access']);
+  if(w==='mode'){const m=pick(a[1],['access','trunk']);if(!m||m==='?')BAD();ctx.forEach(k=>P(k).mode=m)}
+  else if(w==='access'){if(pick(a[1],['vlan'])!=='vlan')BAD();const n=+a[2];if(!n||n>4094)BAD();if(!SW.vlans[n]){SW.vlans[n]=vname(n);say('% Access VLAN does not exist. Creating vlan '+n)}ctx.forEach(k=>{P(k).vlan=n;P(k).mode='access'})}
+  else BAD()},
+ ip:a=>{if(!ctx[0].startsWith('V'))BAD();if(pick(a[0],['address'])!=='address')BAD();if(!ipok(a[1])||!ipok(a[2]))BAD();P(ctx[0]).ip=a[1];P(ctx[0]).mask=a[2]},
+ exit:()=>{cm='cfg'},end:()=>{cm='priv'}}};
+function exec(line){
+ if(pend){pend=0;$('ti').type='text';say('');if(line===SW.secret)cm='priv';else say('% Bad secrets');return}
+ say(PS()+' '+line);const t=line.trim().split(/\s+/).filter(Boolean);if(!t.length)return;
+ const tb=cm==='vlan'||cm==='if'?{...CMD.cfg,...CMD[cm]}:CMD[cm];
+ if(t[0]==='?'||t[t.length-1]==='?'){say(Object.keys(tb).join('  '));return}
+ const c=pick(t[0],Object.keys(tb));
+ if(c==='?')return say('% Ambiguous command:  "'+line.trim()+'"');
+ if(!c)return say("% Invalid input detected at '^' marker.");
+ try{const r=tb[c](t.slice(1));if(r)say(r)}catch(e){say(typeof e==='string'?e:'% Error')}}
+const JOBS=[
+{t:'Segmentar la red de Ventas',s:8,h:'vlan 20 → name VENTAS · interface fa0/5 → switchport mode access → switchport access vlan 20 · write memory',g:[
+ ['Crear la VLAN 20 con el nombre VENTAS',()=>SW.vlans[20]==='VENTAS'],
+ ['Fa0/5 en modo access dentro de la VLAN 20',()=>{const p=SW.ports['Fa0/5'];return p.mode==='access'&&p.vlan===20}],
+ ['Guardar la configuración en NVRAM',()=>saved()]]},
+{t:'Endurecer el switch',s:12,h:'configure terminal → hostname DC-SW1 · enable secret <clave> · interface range fa0/20 - 24 → shutdown · write memory',g:[
+ ['Cambiar el hostname a DC-SW1',()=>SW.host==='DC-SW1'],
+ ['Definir una clave con enable secret',()=>!!SW.secret],
+ ['Apagar los puertos sin uso Fa0/20 a Fa0/24',()=>[20,21,22,23,24].every(n=>SW.ports['Fa0/'+n].shut)],
+ ['Guardar la configuración',()=>saved()]]},
+{t:'Troncal y gestión',s:8,h:'interface gi0/1 → switchport mode trunk · interface vlan 99 → ip address 192.168.99.2 255.255.255.0 → no shutdown · write memory',g:[
+ ['Gi0/1 como troncal (trunk)',()=>SW.ports['Gi0/1'].mode==='trunk'],
+ ['Interfaz VLAN 99 con IP 192.168.99.2/24 activa',()=>{const v=SW.svi[99];return !!v&&v.ip==='192.168.99.2'&&v.mask==='255.255.255.0'&&!v.shut}],
+ ['Guardar la configuración',()=>saved()]]}];
+function goals(ok=[]){const J=JOBS[ji];if(!J){$('dg').innerHTML='<b>Mantenimiento completado.</b>';return}
+ $('dg').innerHTML=`<b>Trabajo ${ji+1} de 3: ${J.t}</b>`+J.g.map((g,i)=>`<div>${ok[i]?'✔':'○'} ${g[0]}</div>`).join('')+`<small>Pista: ${J.h}</small>`}
+function ports(){const g=$('pg');g.innerHTML='';PN.forEach(k=>{const p=SW.ports[k],b=document.createElement('button');b.className='pt '+(p.shut?'bad':p.mode==='trunk'?'new':p.vlan!==1?'on':'');b.textContent=k[0]==='G'?'G'+k.slice(-1):k.slice(3);b.title=FULL(k);b.onclick=()=>{$('ti').value='interface '+k.toLowerCase();$('ti').focus()};g.appendChild(b)})}
+function chk(){const J=JOBS[ji];if(!J)return;const ok=J.g.map(g=>g[1]());goals(ok);if(!ok.every(Boolean))return;
+ ji++;st.net++;st.time+=25;st.sat=Math.min(100,st.sat+8);st.sec=Math.min(100,st.sec+J.s);wrote=false;hud();drawScreen();
+ say('\n*** Trabajo completado: '+J.t+' ***');
+ if(ji>=3){say('Mantenimiento del data center terminado. Cerrando consola...');goals()}else{say('Siguiente trabajo: '+JOBS[ji].t);goals()}
+ if(ji>=3||st.time>=END)setTimeout(()=>{closeDC();if(st.time>=END||st.done>=TICKETS.length)finish()},1800)}
+function openDC(){sitting=true;$('dc').style.display='block';if(!$('tm').textContent)say('Cisco IOS Software, C2960 Software (C2960-LANBASEK9-M), Version 15.0(2)SE4\nCatalyst 2960-24TT · Switch core del data center\nEscribe ? para ver los comandos disponibles.\n');goals();ports();$('ps').textContent=PS();$('ti').focus()}
+function closeDC(){$('dc').style.display='none';sitting=false}
+$('ti').onkeydown=e=>{if(e.key==='Enter'){const v=$('ti').value;$('ti').value='';if(!pend&&v.trim())hist.push(v);hi=hist.length;exec(v);$('ps').textContent=pend?'Password:':PS();ports();chk()}
+ else if(e.key==='ArrowUp'){hi=Math.max(0,hi-1);$('ti').value=hist[hi]||'';e.preventDefault()}
+ else if(e.key==='ArrowDown'){hi=Math.min(hist.length,hi+1);$('ti').value=hist[hi]||''}};
+$('bx').onclick=closeDC;
+
+/* ---------- CONTROLES ---------- */
+let yaw=0,pitch=0,drag=false,lx=0,ly=0,sitting=false;const keys={};
+cam.position.set(-1,1.6,2);
+cam.rotation.order='YXZ';
+cv.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX;ly=e.clientY});
+addEventListener('pointerup',()=>drag=false);
+addEventListener('pointermove',e=>{if(!drag||sitting)return;yaw-=(e.clientX-lx)*.005;pitch=Math.max(-1.2,Math.min(1.2,pitch-(e.clientY-ly)*.005));lx=e.clientX;ly=e.clientY});
+addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyE')act();if(e.code==='Escape'){$('pc').style.display='none';$('dc').style.display='none';sitting=false}});
+addEventListener('keyup',e=>keys[e.code]=false);
+const ACT=[{x:2,z:-1.2,r:2.2,loc:0,l:'Sentarse en la PC (E)'},{x:-2.6,z:1.4,r:1.5,loc:1},{x:-.7,z:1.4,r:1.5,loc:2},{x:1.4,z:1.4,r:1.5,loc:3},{x:-5,z:-1.2,r:1.8,dc:1,l:'Abrir consola del switch Cisco (E)'}];
+const DK=[[2,-1.9,1.2,.6],[-2.6,0,.9,.6],[-.7,0,.9,.6],[1.4,0,.9,.6]];
+function near(){if(sitting)return null;let b=null,bd=9;for(const a of ACT){const d=Math.hypot(cam.position.x-a.x,cam.position.z-a.z);if(d<a.r&&d<bd){b=a;bd=d}}return b}
+function label(a){if(a.dc)return st.net<3?a.l:null;if(a.l)return a.l;return TICKETS.some((k,i)=>k.loc===a.loc&&st.state[i]===null)?`Atender a ${STN[a.loc].name} en sitio (E)`:null}
+function act(){const a=near();if(!a||st.time>=END||!label(a))return;if(a.dc)return openDC();sit(a)}
+function sit(a){sitting=true;onsite=a.loc;$('pc').style.display='block';renderList();const n=st.state.findIndex((s,i)=>s===null&&TICKETS[i].loc===onsite);openTicket(n>=0?n:st.state.findIndex(s=>s===null))}
+$('use').onclick=act;
+function resize(){R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();
+
+let bl=0,last=performance.now();
+function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000);last=t;if(((t/350)|0)!==bl){bl=(t/350)|0;LEDS.forEach(l=>{if(Math.random()<.25)l.material.color.setHex(Math.random()<.4?0x111111:lm[(Math.random()*4)|0])})}
+ if(!sitting){const f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0),s=(keys.KeyD?1:0)-(keys.KeyA?1:0);
+  if(keys.ArrowLeft)yaw+=dt*1.8;if(keys.ArrowRight)yaw-=dt*1.8;
+  const sp=2.6*dt,nx=cam.position.x+(-Math.sin(yaw)*f+Math.cos(yaw)*s)*sp,nz=cam.position.z+(-Math.cos(yaw)*f-Math.sin(yaw)*s)*sp;
+  const ok=(x,z)=>{for(const d of DK)if(Math.abs(x-d[0])<d[2]&&Math.abs(z-d[1])<d[3])return false;
+   if(x>-3.7&&x<3.6&&z>-2.5&&z<2.6)return true;if(x>-11.5&&x<-4.3&&z>-1.7&&z<2.6)return true;return x>=-4.3&&x<=-3.7&&Math.abs(z)<.8};
+  if(ok(nx,cam.position.z))cam.position.x=nx;if(ok(cam.position.x,nz))cam.position.z=nz}
+ cam.rotation.set(pitch,yaw,0);
+ {const a=near(),l=a&&label(a);$('use').style.display=l&&st.time<END?'block':'none';if(l)$('use').textContent=l}
+ R.render(S,cam)}
+hud();drawScreen();drawSt();requestAnimationFrame(loop);
+</script></body></html>
